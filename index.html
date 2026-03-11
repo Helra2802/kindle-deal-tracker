@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kindle Deal Tracker</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family: -apple-system;
+background:#f5f5f7;
+margin:0;
+}
+
+header{
+background:#ff9900;
+color:white;
+padding:16px;
+font-size:22px;
+font-weight:bold;
+}
+
+.section{
+padding:16px;
+}
+
+.card{
+background:white;
+border-radius:12px;
+padding:14px;
+margin-bottom:12px;
+box-shadow:0 2px 6px rgba(0,0,0,0.08);
+}
+
+button{
+background:#ff9900;
+border:none;
+padding:10px 14px;
+color:white;
+border-radius:8px;
+font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+📚 Kindle Deal Tracker
+</header>
+
+<div class="section">
+
+<h3>🔥 Kindle Daily Deals</h3>
+
+<div id="deals"></div>
+
+</div>
+
+<div class="section">
+
+<h3>📉 Your Price Drops</h3>
+
+<a href="https://uk.ereaderiq.com/track/drops#login">
+<button>Open eReaderIQ Tracker</button>
+</a>
+
+</div>
+
+<script>
+
+async function loadDeals(){
+
+const url="https://api.allorigins.win/raw?url=https://www.amazon.co.uk/b?node=216326542031";
+
+const res=await fetch(url);
+
+const text=await res.text();
+
+const parser=new DOMParser();
+const doc=parser.parseFromString(text,"text/html");
+
+let items=doc.querySelectorAll(".a-link-normal");
+
+let output="";
+
+items.forEach((item,i)=>{
+
+if(i<10){
+
+let title=item.innerText.trim();
+let link="https://amazon.co.uk"+item.getAttribute("href");
+
+if(title.length>5){
+
+output+=`
+<div class="card">
+<a href="${link}">
+${title}
+</a>
+</div>
+`
+
+}
+
+}
+
+})
+
+document.getElementById("deals").innerHTML=output;
+
+}
+
+loadDeals();
+
+</script>
+
+</body>
+</html>
