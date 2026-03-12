@@ -1,121 +1,679 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Kindle Deal Tracker</title>
-
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
+<title>📚 Kindle Deal Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-
-body{
-font-family: -apple-system;
-background:#f5f5f7;
-margin:0;
+:root {
+  --burg:       #5C1B2E;
+  --burg-dark:  #3D0F1E;
+  --burg-mid:   #7A2340;
+  --parch:      #FAF5E9;
+  --parch-card: #FFFDF7;
+  --gold:       #C5923C;
+  --gold-lt:    #E2B56A;
+  --forest:     #2A5240;
+  --forest-lt:  #3B7059;
+  --ink:        #180E08;
+  --muted:      #8A7060;
+  --border:     rgba(92,27,46,0.13);
+  --shadow:     0 3px 20px rgba(92,27,46,0.13);
+  --shadow-lg:  0 8px 36px rgba(92,27,46,0.18);
+  --gr-green:   #409D69;
+  --fable-blue: #3B6BAF;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; }
+body {
+  font-family:'Lora',Georgia,serif;
+  background:var(--parch);
+  color:var(--ink);
+  display:flex; flex-direction:column; min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 10% 0%,  rgba(197,146,60,.07) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 90% 100%, rgba(92,27,46,.07)  0%, transparent 70%);
 }
 
-header{
-background:#ff9900;
-color:white;
-padding:16px;
-font-size:22px;
-font-weight:bold;
+/* ── HEADER ── */
+header {
+  background:linear-gradient(150deg,var(--burg-dark) 0%,var(--burg) 55%,var(--burg-mid) 100%);
+  color:var(--parch); padding:20px 20px 16px;
+  position:relative; overflow:hidden; flex-shrink:0;
+}
+header::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(-45deg,transparent,transparent 28px,
+    rgba(197,146,60,.04) 28px,rgba(197,146,60,.04) 29px);
+}
+.header-inner { position:relative; z-index:1; max-width:1100px; margin:0 auto; }
+.header-eyebrow { font-size:11px; letter-spacing:4px; color:var(--gold-lt); text-transform:uppercase; margin-bottom:4px; opacity:.85; }
+header h1 { font-family:'Playfair Display',serif; font-size:clamp(22px,5vw,34px); font-weight:700; line-height:1.1; }
+header p  { font-style:italic; font-size:13px; color:var(--gold-lt); margin-top:4px; opacity:.85; }
+
+/* ── NAV ── */
+nav { background:var(--burg); display:flex; flex-shrink:0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+nav button {
+  flex:1; min-width:110px; padding:12px 14px;
+  background:none; border:none; border-bottom:3px solid transparent;
+  color:rgba(250,245,233,.55); font-family:'Lora',serif; font-size:13px;
+  cursor:pointer; white-space:nowrap; transition:all .18s;
+}
+nav button.active { color:var(--parch); border-bottom-color:var(--gold); background:rgba(255,255,255,.06); }
+nav button:hover:not(.active) { color:var(--parch); background:rgba(255,255,255,.04); }
+
+/* ── MAIN ── */
+main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.tab { display:none; flex:1; overflow:hidden; }
+.tab.active { display:flex; flex-direction:column; }
+
+/* ── SECTION HEAD ── */
+.section-head { padding:14px 18px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.section-head h2 { font-family:'Playfair Display',serif; font-size:20px; color:var(--burg); }
+.section-head p  { font-size:12px; color:var(--muted); font-style:italic; margin-top:2px; }
+
+/* ── DEALS SPLIT ── */
+.deals-body { flex:1; display:flex; overflow:hidden; }
+.deals-list { width:300px; min-width:190px; overflow-y:auto; border-right:1px solid var(--border); flex-shrink:0; }
+.deal-row { display:flex; gap:10px; align-items:center; padding:12px 13px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .15s; border-left:3px solid transparent; }
+.deal-row:hover { background:rgba(92,27,46,.04); }
+.deal-row.sel   { background:rgba(92,27,46,.08); border-left-color:var(--gold); }
+.deal-thumb { width:42px; min-width:42px; height:60px; border-radius:3px; background:var(--parch); display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--muted); overflow:hidden; box-shadow:1px 2px 6px rgba(0,0,0,.18); flex-shrink:0; }
+.deal-thumb img { width:100%; height:100%; object-fit:cover; border-radius:3px; }
+.deal-row-info { flex:1; min-width:0; }
+.deal-row-title  { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:var(--ink); line-height:1.25; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.deal-row-author { font-size:11px; color:var(--muted); font-style:italic; margin-top:2px; }
+.deal-row-price  { font-size:12px; color:var(--forest); font-weight:600; margin-top:3px; }
+
+.deal-detail { flex:1; overflow-y:auto; padding:22px 20px; display:flex; flex-direction:column; }
+.detail-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); font-style:italic; font-size:14px; gap:12px; text-align:center; }
+.detail-empty .big { font-size:48px; }
+
+.detail-book { display:flex; gap:18px; margin-bottom:20px; }
+.detail-cover { width:110px; min-width:110px; height:160px; border-radius:6px; overflow:hidden; box-shadow:4px 6px 20px rgba(0,0,0,.22); background:var(--parch); display:flex; align-items:center; justify-content:center; font-size:36px; color:var(--muted); flex-shrink:0; }
+.detail-cover img { width:100%; height:100%; object-fit:cover; }
+.detail-meta { flex:1; }
+.detail-title  { font-family:'Playfair Display',serif; font-size:clamp(15px,2.5vw,21px); font-weight:700; line-height:1.25; color:var(--ink); margin-bottom:5px; }
+.detail-author { font-size:13px; color:var(--muted); font-style:italic; margin-bottom:10px; }
+.price-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+.price-now { font-family:'Playfair Display',serif; font-size:22px; color:var(--forest); font-weight:700; }
+.price-was { font-size:14px; color:var(--muted); text-decoration:line-through; }
+.badge { background:var(--burg); color:var(--parch); font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; }
+.stars-row { display:flex; align-items:center; gap:6px; margin-bottom:12px; }
+.stars { color:var(--gold); font-size:15px; letter-spacing:2px; }
+.stars-count { font-size:12px; color:var(--muted); }
+.detail-desc { font-size:13px; line-height:1.8; color:#3A2A1A; margin-bottom:18px; border-left:3px solid var(--gold); padding-left:14px; font-style:italic; }
+.detail-cats { font-size:11px; color:var(--muted); font-style:italic; margin-bottom:12px; }
+
+.btn-amazon  { display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#FF9900,#E88800); color:#111; border:none; padding:14px 22px; border-radius:10px; font-family:'Lora',serif; font-size:15px; font-weight:700; cursor:pointer; text-decoration:none; width:100%; max-width:380px; box-shadow:0 4px 16px rgba(255,153,0,.35); transition:all .2s; }
+.btn-amazon:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,153,0,.4); }
+.btn-ereader { display:flex; align-items:center; justify-content:center; gap:8px; background:var(--forest); color:white; border:none; padding:11px 22px; border-radius:10px; font-family:'Lora',serif; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; width:100%; max-width:380px; margin-top:10px; transition:all .2s; }
+.btn-ereader:hover { background:var(--forest-lt); transform:translateY(-2px); }
+
+/* ── TRACKED / TBR TAB ── */
+.tracked-body { flex:1; overflow-y:auto; padding:16px; }
+
+/* source toggle */
+.source-toggle { display:flex; gap:0; margin-bottom:18px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border); }
+.source-btn { flex:1; padding:10px 12px; background:var(--parch-card); border:none; font-family:'Lora',serif; font-size:13px; color:var(--muted); cursor:pointer; transition:all .18s; border-right:1px solid var(--border); white-space:nowrap; }
+.source-btn:last-child { border-right:none; }
+.source-btn.active { background:var(--burg); color:var(--parch); font-weight:600; }
+.source-btn:hover:not(.active) { background:rgba(92,27,46,.05); color:var(--ink); }
+
+/* add row */
+.add-row { display:flex; gap:10px; margin-bottom:20px; }
+.add-input { flex:1; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-family:'Lora',serif; font-size:14px; background:var(--parch-card); color:var(--ink); outline:none; transition:border-color .2s; }
+.add-input:focus { border-color:var(--burg); }
+.btn-add { background:var(--burg); color:var(--parch); border:none; padding:11px 16px; border-radius:9px; font-family:'Lora',serif; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; }
+.btn-add:hover { background:var(--burg-dark); }
+
+/* Goodreads banner */
+.gr-banner {
+  background:linear-gradient(135deg,rgba(64,157,105,.12),rgba(64,157,105,.05));
+  border:1px solid rgba(64,157,105,.25); border-radius:10px;
+  padding:12px 14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;
+}
+.gr-banner .gr-icon { font-size:24px; flex-shrink:0; }
+.gr-banner-text { flex:1; font-size:12px; color:var(--muted); line-height:1.5; }
+.gr-banner-text strong { color:var(--gr-green); font-size:13px; display:block; margin-bottom:2px; }
+.gr-sync-btn { background:var(--gr-green); color:white; border:none; padding:8px 13px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; }
+.gr-sync-btn:hover { opacity:.85; }
+.gr-sync-btn:disabled { opacity:.5; cursor:default; }
+
+/* Fable banner */
+.fable-banner {
+  background:linear-gradient(135deg,rgba(59,107,175,.1),rgba(59,107,175,.04));
+  border:1px solid rgba(59,107,175,.2); border-radius:10px;
+  padding:12px 14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;
+}
+.fable-banner .fable-icon { font-size:24px; flex-shrink:0; }
+.fable-banner-text { flex:1; font-size:12px; color:var(--muted); line-height:1.5; }
+.fable-banner-text strong { color:var(--fable-blue); font-size:13px; display:block; margin-bottom:2px; }
+.btn-fable { background:var(--fable-blue); color:white; border:none; padding:8px 13px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; text-decoration:none; display:inline-block; }
+.btn-fable:hover { opacity:.85; }
+
+/* source label pill */
+.source-pill { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; letter-spacing:.3px; margin-bottom:5px; }
+.source-pill.gr     { background:rgba(64,157,105,.15); color:var(--gr-green); }
+.source-pill.manual { background:rgba(92,27,46,.1);    color:var(--burg); }
+
+/* book card */
+.tracked-card { background:var(--parch-card); border-radius:12px; padding:14px; margin-bottom:14px; box-shadow:var(--shadow); border-left:3px solid var(--gold); display:flex; gap:14px; align-items:flex-start; animation:slideIn .25s ease; }
+.tracked-card.gr-card { border-left-color:var(--gr-green); }
+@keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
+.tracked-cover { width:56px; min-width:56px; height:80px; border-radius:4px; background:var(--parch); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--muted); overflow:hidden; box-shadow:2px 3px 10px rgba(0,0,0,.15); }
+.tracked-cover img { width:100%; height:100%; object-fit:cover; border-radius:4px; }
+.tracked-info { flex:1; min-width:0; }
+.tracked-title  { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; color:var(--ink); margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tracked-author { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:7px; }
+.tracked-actions { display:flex; gap:7px; flex-wrap:wrap; }
+.btn-sm { font-size:12px; padding:5px 11px; border-radius:7px; border:none; font-family:'Lora',serif; font-weight:600; cursor:pointer; transition:all .15s; text-decoration:none; display:inline-block; }
+.btn-sm.amazon  { background:#FF9900; color:#111; }
+.btn-sm.ereader { background:var(--forest); color:white; }
+.btn-sm.gr      { background:var(--gr-green); color:white; }
+.btn-sm:hover { opacity:.85; transform:translateY(-1px); }
+.remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:17px; padding:4px; border-radius:50%; transition:color .2s; line-height:1; margin-left:auto; align-self:flex-start; }
+.remove-btn:hover { color:var(--burg); }
+.book-snippet { margin-top:8px; padding:8px 10px; background:var(--parch); border-radius:7px; font-size:12px; line-height:1.65; color:var(--muted); font-style:italic; }
+
+/* ── DROPS TAB ── */
+.drops-body { flex:1; overflow-y:auto; padding:16px; }
+.drops-tiles { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:500px) { .drops-tiles { grid-template-columns:1fr; } }
+.drop-tile { background:var(--parch-card); border-radius:12px; padding:18px 16px; box-shadow:var(--shadow); text-align:center; }
+.drop-tile h3 { font-family:'Playfair Display',serif; font-size:16px; margin-bottom:6px; }
+.drop-tile p  { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:14px; line-height:1.55; }
+.btn-tile { display:inline-block; padding:10px 18px; border-radius:8px; font-family:'Lora',serif; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; border:none; cursor:pointer; }
+.btn-tile.burg   { background:var(--burg);   color:var(--parch); }
+.btn-tile.forest { background:var(--forest); color:white; }
+.btn-tile.amber  { background:var(--gold);   color:var(--ink); }
+.btn-tile:hover  { transform:translateY(-2px); opacity:.9; }
+
+/* ── LOADING / EMPTY ── */
+.loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; color:var(--muted); gap:12px; }
+.spinner { width:32px; height:32px; border:3px solid rgba(92,27,46,.15); border-top-color:var(--burg); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.loading p { font-style:italic; font-size:13px; }
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 20px; color:var(--muted); gap:10px; text-align:center; }
+.empty-state .icon { font-size:44px; }
+.empty-state p { font-style:italic; font-size:14px; line-height:1.6; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:560px) {
+  .deals-list { width:150px; min-width:130px; }
+  .detail-cover { width:80px; min-width:80px; height:116px; }
 }
 
-.section{
-padding:16px;
-}
-
-.card{
-background:white;
-border-radius:12px;
-padding:14px;
-margin-bottom:12px;
-box-shadow:0 2px 6px rgba(0,0,0,0.08);
-}
-
-button{
-background:#ff9900;
-border:none;
-padding:10px 14px;
-color:white;
-border-radius:8px;
-font-weight:bold;
-}
-
+footer { text-align:center; padding:16px; font-size:11px; color:var(--muted); font-style:italic; border-top:1px solid var(--border); flex-shrink:0; }
 </style>
 </head>
-
 <body>
 
 <header>
-📚 Kindle Deal Tracker
+  <div class="header-inner">
+    <div class="header-eyebrow">✦ &nbsp; Your Literary Companion &nbsp; ✦</div>
+    <h1>📚 Kindle Deal Tracker</h1>
+    <p>Daily deals · Goodreads TBR · price drop alerts — all in one place</p>
+  </div>
 </header>
 
-<div class="section">
+<nav>
+  <button class="active" onclick="showTab('deals',this)">🔥 Daily Deals</button>
+  <button onclick="showTab('tracked',this)">📚 My Books</button>
+  <button onclick="showTab('drops',this)">📉 Price Drops</button>
+</nav>
 
-<h3>🔥 Kindle Daily Deals</h3>
+<main>
 
-<div id="deals"></div>
+  <!-- ══ DEALS ══ -->
+  <div id="tab-deals" class="tab active">
+    <div class="section-head">
+      <h2>Today's Kindle Deals</h2>
+      <p>Select a deal on the left · full details + Amazon link on the right</p>
+    </div>
+    <div class="deals-body">
+      <div class="deals-list" id="deals-list">
+        <div class="loading"><div class="spinner"></div><p>Loading deals…</p></div>
+      </div>
+      <div class="deal-detail" id="deal-detail">
+        <div class="detail-empty">
+          <div class="big">📖</div>
+          <p>Select a deal on the left<br>to see full details here</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-</div>
+  <!-- ══ TRACKED / TBR ══ -->
+  <div id="tab-tracked" class="tab">
+    <div class="section-head">
+      <h2>My Books</h2>
+      <p>Your Goodreads TBR + manually tracked books, all in one place</p>
+    </div>
+    <div class="tracked-body">
 
-<div class="section">
+      <!-- Source toggle -->
+      <div class="source-toggle">
+        <button class="source-btn active" id="src-all"  onclick="switchSource('all',this)">📚 All Books</button>
+        <button class="source-btn"        id="src-gr"   onclick="switchSource('gr',this)">🌿 Goodreads TBR</button>
+        <button class="source-btn"        id="src-mine" onclick="switchSource('mine',this)">🔖 My Tracked</button>
+        <button class="source-btn"        id="src-fab"  onclick="switchSource('fable',this)">📖 Fable</button>
+      </div>
 
-<h3>📉 Your Price Drops</h3>
+      <!-- Goodreads banner -->
+      <div class="gr-banner" id="gr-banner">
+        <div class="gr-icon">🌿</div>
+        <div class="gr-banner-text">
+          <strong>Goodreads TBR connected</strong>
+          Syncing your Want to Read shelf automatically
+        </div>
+        <button class="gr-sync-btn" id="gr-sync-btn" onclick="loadGoodreads()">↻ Sync</button>
+      </div>
 
-<a href="https://uk.ereaderiq.com/track/drops#login">
-<button>Open eReaderIQ Tracker</button>
-</a>
+      <!-- Add manually -->
+      <div id="manual-add-section">
+        <div class="add-row">
+          <input id="track-input" class="add-input" placeholder="Add a book manually — title or author…"
+                 onkeypress="if(event.key==='Enter') addTracked()">
+          <button class="btn-add" onclick="addTracked()">+ Add</button>
+        </div>
+      </div>
 
-</div>
+      <!-- Fable note (shown only on fable tab) -->
+      <div class="fable-banner" id="fable-banner" style="display:none;">
+        <div class="fable-icon">📖</div>
+        <div class="fable-banner-text">
+          <strong>Fable doesn't have a public API yet</strong>
+          Open Fable to view your shelves — we'll keep checking for an integration!
+        </div>
+        <a class="btn-fable" href="https://fable.co" target="_blank">Open Fable →</a>
+      </div>
+
+      <div id="tracked-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ DROPS ══ -->
+  <div id="tab-drops" class="tab">
+    <div class="section-head">
+      <h2>Price Drop Alerts</h2>
+      <p>Set target prices and get notified the moment a deal hits</p>
+    </div>
+    <div class="drops-body">
+      <div class="drops-tiles">
+        <div class="drop-tile" style="border-top:4px solid var(--forest);">
+          <h3 style="color:var(--forest);">📉 eReaderIQ</h3>
+          <p>The best Kindle price tracker. Set a target price, get an email when it drops.</p>
+          <a class="btn-tile forest" href="https://uk.ereaderiq.com/track/drops#login" target="_blank">Open Dashboard →</a>
+        </div>
+        <div class="drop-tile" style="border-top:4px solid var(--gold);">
+          <h3 style="color:var(--gold);">🐪 CamelCamelCamel</h3>
+          <p>Full Amazon price history charts. See the lowest a book has ever been.</p>
+          <a class="btn-tile amber" href="https://uk.camelcamelcamel.com" target="_blank">View History →</a>
+        </div>
+        <div class="drop-tile" style="border-top:4px solid var(--burg);">
+          <h3 style="color:var(--burg);">🔔 Set an Alert</h3>
+          <p>Paste any Amazon book URL into eReaderIQ to track its exact price.</p>
+          <a class="btn-tile burg" href="https://uk.ereaderiq.com/search/books/" target="_blank">Search Books →</a>
+        </div>
+        <div class="drop-tile" style="border-top:4px solid var(--muted);">
+          <h3>📬 Daily Email</h3>
+          <p>eReaderIQ emails you daily with all books that hit their target price.</p>
+          <a class="btn-tile forest" href="https://uk.ereaderiq.com/account/settings/" target="_blank">Email Settings →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>✦ &nbsp; Deals via eReaderIQ RSS &nbsp;•&nbsp; Book data via Google Books &nbsp;•&nbsp; TBR via Goodreads &nbsp; ✦</footer>
 
 <script>
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+const GOODREADS_USER_ID = '186981953';
+const PROXY = 'https://api.allorigins.win/raw?url=';
 
-async function loadDeals(){
-
-const url="https://api.allorigins.win/raw?url=https://www.amazon.co.uk/b?node=216326542031";
-
-const res=await fetch(url);
-
-const text=await res.text();
-
-const parser=new DOMParser();
-const doc=parser.parseFromString(text,"text/html");
-
-let items=doc.querySelectorAll(".a-link-normal");
-
-let output="";
-
-items.forEach((item,i)=>{
-
-if(i<10){
-
-let title=item.innerText.trim();
-let link="https://amazon.co.uk"+item.getAttribute("href");
-
-if(title.length>5){
-
-output+=`
-<div class="card">
-<a href="${link}">
-${title}
-</a>
-</div>
-`
-
+// ─────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
 }
 
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+function stars(r) {
+  if (!r) return '';
+  const f = Math.round(r);
+  return '★'.repeat(f) + '☆'.repeat(5 - f);
+}
+function pctOff(orig, sale) {
+  if (!orig || !sale || orig <= sale) return null;
+  return Math.round((1 - sale / orig) * 100) + '% off';
+}
+async function fetchGoogleBooks(query) {
+  try {
+    const q = encodeURIComponent(query.replace(/[^\w\s]/g, '').trim().slice(0, 70));
+    const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&langRestrict=en`);
+    const d = await r.json();
+    if (!d.items?.[0]) return null;
+    const v = d.items[0].volumeInfo;
+    return {
+      title:       v.title || query,
+      author:      v.authors?.[0] || '',
+      cover:       (v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '').replace('http:', 'https:'),
+      rating:      v.averageRating || null,
+      ratingCount: v.ratingsCount  || null,
+      description: v.description   || '',
+      categories:  v.categories?.[0] || '',
+      pageCount:   v.pageCount || null,
+    };
+  } catch { return null; }
 }
 
-})
+// ─────────────────────────────────────────────
+// DEALS
+// ─────────────────────────────────────────────
+let dealsData = [];
 
-document.getElementById("deals").innerHTML=output;
+async function loadDeals() {
+  const list   = document.getElementById('deals-list');
+  const detail = document.getElementById('deal-detail');
+  try {
+    const url = PROXY + encodeURIComponent('https://uk.ereaderiq.com/rss/daily-deals');
+    const res = await fetch(url, { signal: AbortSignal.timeout(9000) });
+    const xml = new DOMParser().parseFromString(await res.text(), 'text/xml');
+    const items = [...xml.querySelectorAll('item')].slice(0, 14);
+    if (!items.length) throw new Error('empty');
 
+    dealsData = items.map(item => {
+      const rawTitle = item.querySelector('title')?.textContent || 'Unknown';
+      const link     = item.querySelector('link')?.textContent  || '#';
+      const desc     = item.querySelector('description')?.textContent || '';
+      const prices   = desc.match(/£[\d.]+/g) || [];
+      return { rawTitle, link, salePrice: prices[0] || null, wasPrice: prices[1] || null, info: null };
+    });
+
+    list.innerHTML = '';
+    dealsData.forEach((d, i) => {
+      const row = document.createElement('div');
+      row.className = 'deal-row';
+      row.id = 'row-' + i;
+      row.onclick = () => selectDeal(i);
+      row.innerHTML = `
+        <div class="deal-thumb">📖</div>
+        <div class="deal-row-info">
+          <div class="deal-row-title">${d.rawTitle}</div>
+          <div class="deal-row-price">${d.salePrice || ''}</div>
+        </div>`;
+      list.appendChild(row);
+    });
+
+    for (let i = 0; i < dealsData.length; i++) {
+      const info = await fetchGoogleBooks(dealsData[i].rawTitle);
+      dealsData[i].info = info;
+      const row = document.getElementById('row-' + i);
+      if (row && info) {
+        if (info.cover) row.querySelector('.deal-thumb').innerHTML = `<img src="${info.cover}" alt="">`;
+        row.querySelector('.deal-row-title').textContent = info.title;
+        if (info.author) {
+          const a = document.createElement('div');
+          a.className = 'deal-row-author';
+          a.textContent = info.author;
+          row.querySelector('.deal-row-info').insertBefore(a, row.querySelector('.deal-row-price'));
+        }
+        if (row.classList.contains('sel')) selectDeal(i);
+      }
+    }
+    if (dealsData.length) selectDeal(0);
+
+  } catch {
+    list.innerHTML = `<div class="empty-state"><div class="icon">😔</div><p>Deals couldn't load today.<br>Amazon's servers may be busy.</p></div>`;
+    detail.innerHTML = `
+      <div class="detail-empty">
+        <div class="big">📚</div>
+        <p style="margin-bottom:16px;">View today's deals directly on Amazon:</p>
+        <a class="btn-amazon" href="https://www.amazon.co.uk/b?node=216326542031" target="_blank">Open Kindle Daily Deals →</a>
+      </div>`;
+  }
+}
+
+function selectDeal(i) {
+  document.querySelectorAll('.deal-row').forEach((r, j) => r.classList.toggle('sel', j === i));
+  const d    = dealsData[i];
+  const info = d.info;
+  const detail = document.getElementById('deal-detail');
+
+  const title  = info?.title  || d.rawTitle;
+  const author = info?.author || '';
+  const cover  = info?.cover  || '';
+  const rating = info?.rating;
+  const rCount = info?.ratingCount;
+  const desc   = info?.description ? info.description.slice(0, 300) + (info.description.length > 300 ? '…' : '') : '';
+  const cats   = info?.categories || '';
+  const pages  = info?.pageCount  || '';
+  const sNum   = d.salePrice ? parseFloat(d.salePrice.replace('£', '')) : null;
+  const wNum   = d.wasPrice  ? parseFloat(d.wasPrice.replace('£', ''))  : null;
+  const badge  = pctOff(wNum, sNum);
+  const amzUrl = d.link !== '#' ? d.link : `https://www.amazon.co.uk/s?k=${encodeURIComponent(title + ' kindle')}&i=digital-text`;
+  const erUrl  = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(title)}`;
+
+  detail.innerHTML = `
+    <div class="detail-book">
+      <div class="detail-cover">${cover ? `<img src="${cover}" alt="">` : '📖'}</div>
+      <div class="detail-meta">
+        <div class="detail-title">${title}</div>
+        ${author ? `<div class="detail-author">by ${author}</div>` : ''}
+        <div class="price-row">
+          ${d.salePrice ? `<span class="price-now">${d.salePrice}</span>` : ''}
+          ${d.wasPrice  ? `<span class="price-was">${d.wasPrice}</span>`  : ''}
+          ${badge       ? `<span class="badge">${badge}</span>`           : ''}
+        </div>
+        ${rating ? `<div class="stars-row"><span class="stars">${stars(rating)}</span><span class="stars-count">${rating}${rCount ? ` (${Number(rCount).toLocaleString()})` : ''}</span></div>` : ''}
+        ${cats   ? `<div class="detail-cats">📂 ${cats}${pages ? ` &nbsp;·&nbsp; 📄 ${pages} pages` : ''}</div>` : ''}
+      </div>
+    </div>
+    ${desc ? `<div class="detail-desc">${desc}</div>` : ''}
+    <a class="btn-amazon"  href="${amzUrl}" target="_blank" rel="noopener">🛒 &nbsp; View on Amazon →</a>
+    <a class="btn-ereader" href="${erUrl}"  target="_blank" rel="noopener">📉 &nbsp; Track price on eReaderIQ</a>`;
+}
+
+// ─────────────────────────────────────────────
+// GOODREADS TBR
+// ─────────────────────────────────────────────
+let grBooks = JSON.parse(localStorage.getItem('kdt-gr') || '[]');
+let grLastSync = localStorage.getItem('kdt-gr-sync') || null;
+
+async function loadGoodreads() {
+  const btn = document.getElementById('gr-sync-btn');
+  const banner = document.querySelector('.gr-banner-text');
+  btn.disabled = true;
+  btn.textContent = '↻ Syncing…';
+
+  try {
+    const feedUrl = encodeURIComponent(`https://www.goodreads.com/review/list_rss/${GOODREADS_USER_ID}?shelf=to-read`);
+    const res = await fetch(PROXY + feedUrl, { signal: AbortSignal.timeout(12000) });
+    const text = await res.text();
+    const xml  = new DOMParser().parseFromString(text, 'text/xml');
+    const items = [...xml.querySelectorAll('item')];
+    if (!items.length) throw new Error('empty');
+
+    const parsed = items.map(item => {
+      const title  = item.querySelector('title')?.textContent || '';
+      const author = item.querySelector('author_name')?.textContent
+                  || item.querySelector('author')?.textContent || '';
+      const cover  = item.querySelector('book_large_image_url')?.textContent
+                  || item.querySelector('book_image_url')?.textContent || '';
+      const grLink = item.querySelector('link')?.textContent || '';
+      const rating = parseFloat(item.querySelector('average_rating')?.textContent) || null;
+      const desc   = item.querySelector('book_description')?.textContent
+                  || item.querySelector('description')?.textContent || '';
+      // strip HTML from description
+      const cleanDesc = desc.replace(/<[^>]*>/g, '').trim();
+      return {
+        title:       title.replace(/\s*\(.*?\)\s*/g, '').trim(),
+        author:      author.replace(/\s*\(.*?\)\s*/g, '').trim(),
+        cover:       cover.replace('http:', 'https:'),
+        rating,
+        ratingCount: null,
+        description: cleanDesc,
+        grLink,
+        source:      'gr',
+      };
+    });
+
+    grBooks = parsed;
+    localStorage.setItem('kdt-gr', JSON.stringify(grBooks));
+    grLastSync = new Date().toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+    localStorage.setItem('kdt-gr-sync', grLastSync);
+
+    banner.innerHTML = `<strong>Goodreads TBR — ${grBooks.length} books</strong>Last synced: ${grLastSync}`;
+    btn.textContent = '↻ Sync';
+    btn.disabled = false;
+    renderBooks();
+
+  } catch {
+    banner.innerHTML = `<strong>Goodreads TBR</strong>Couldn't sync right now — Goodreads may be busy. Try again shortly.`;
+    btn.textContent = '↻ Retry';
+    btn.disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────
+// MANUAL TRACKED BOOKS
+// ─────────────────────────────────────────────
+let manualBooks = JSON.parse(localStorage.getItem('kdt-manual') || '[]');
+function saveManual() { localStorage.setItem('kdt-manual', JSON.stringify(manualBooks)); }
+
+async function addTracked() {
+  const input = document.getElementById('track-input');
+  const q = input.value.trim();
+  if (!q) return;
+  input.disabled = true;
+  const orig = input.placeholder;
+  input.placeholder = `Looking up "${q}"…`;
+  input.value = '';
+
+  const info = await fetchGoogleBooks(q);
+  manualBooks.unshift({
+    title:       info?.title       || q,
+    author:      info?.author      || '',
+    cover:       info?.cover       || '',
+    rating:      info?.rating      || null,
+    ratingCount: info?.ratingCount || null,
+    description: info?.description || '',
+    source:      'manual',
+  });
+  saveManual();
+  renderBooks();
+  input.placeholder = orig;
+  input.disabled = false;
+}
+
+function removeBook(source, i) {
+  if (source === 'manual') {
+    manualBooks.splice(i, 1);
+    saveManual();
+  }
+  renderBooks();
+}
+
+// ─────────────────────────────────────────────
+// SOURCE FILTER + RENDER
+// ─────────────────────────────────────────────
+let currentSource = 'all';
+
+function switchSource(src, btn) {
+  currentSource = src;
+  document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const grBanner     = document.getElementById('gr-banner');
+  const fableBanner  = document.getElementById('fable-banner');
+  const manualAdd    = document.getElementById('manual-add-section');
+
+  grBanner.style.display    = (src === 'all' || src === 'gr')    ? 'flex' : 'none';
+  fableBanner.style.display = (src === 'fable')                  ? 'flex' : 'none';
+  manualAdd.style.display   = (src === 'all' || src === 'mine')  ? 'block': 'none';
+
+  renderBooks();
+}
+
+function renderBooks() {
+  const el = document.getElementById('tracked-list');
+
+  let books = [];
+  if (currentSource === 'all' || currentSource === 'gr')   books = books.concat(grBooks.map((b,i) => ({...b, _src:'gr', _idx:i})));
+  if (currentSource === 'all' || currentSource === 'mine') books = books.concat(manualBooks.map((b,i) => ({...b, _src:'manual', _idx:i})));
+
+  if (currentSource === 'fable') {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📖</div>
+        <p>Fable doesn't have a public API yet.<br>Your shelves can only be viewed in the Fable app.</p>
+      </div>`;
+    return;
+  }
+
+  if (!books.length) {
+    const msgs = {
+      gr:   '<div class="icon">🌿</div><p>Syncing your Goodreads TBR…<br>Press Sync above if it doesn\'t appear.</p>',
+      mine: '<div class="icon">🔖</div><p>No books tracked yet.<br>Add one using the search above!</p>',
+      all:  '<div class="icon">📚</div><p>No books yet.<br>Sync Goodreads or add one manually!</p>',
+    };
+    el.innerHTML = `<div class="empty-state">${msgs[currentSource] || msgs.all}</div>`;
+    return;
+  }
+
+  el.innerHTML = '';
+  books.forEach(book => {
+    const isGr     = book._src === 'gr';
+    const amzUrl   = `https://www.amazon.co.uk/s?k=${encodeURIComponent(book.title + ' kindle')}&i=digital-text`;
+    const erUrl    = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(book.title)}`;
+
+    const card = document.createElement('div');
+    card.className = 'tracked-card' + (isGr ? ' gr-card' : '');
+    card.innerHTML = `
+      <div class="tracked-cover">${book.cover ? `<img src="${book.cover}" alt="">` : '📖'}</div>
+      <div class="tracked-info">
+        <span class="source-pill ${isGr ? 'gr' : 'manual'}">${isGr ? '🌿 Goodreads TBR' : '🔖 Tracked'}</span>
+        <div class="tracked-title">${book.title}</div>
+        ${book.author ? `<div class="tracked-author">by ${book.author}</div>` : ''}
+        ${book.rating ? `<div style="color:var(--gold);font-size:12px;margin-bottom:6px;">${stars(book.rating)} ${book.rating}</div>` : ''}
+        <div class="tracked-actions">
+          <a class="btn-sm amazon"  href="${amzUrl}" target="_blank">🛒 Amazon</a>
+          <a class="btn-sm ereader" href="${erUrl}"  target="_blank">📉 Track Price</a>
+          ${isGr && book.grLink ? `<a class="btn-sm gr" href="${book.grLink}" target="_blank">🌿 Goodreads</a>` : ''}
+        </div>
+        ${book.description ? `<div class="book-snippet">${book.description.slice(0, 200)}${book.description.length > 200 ? '…' : ''}</div>` : ''}
+      </div>
+      ${!isGr ? `<button class="remove-btn" onclick="removeBook('manual',${book._idx})" title="Remove">✕</button>` : ''}`;
+    el.appendChild(card);
+  });
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+// Restore cached Goodreads books + show sync date
+if (grBooks.length && grLastSync) {
+  document.querySelector('.gr-banner-text').innerHTML =
+    `<strong>Goodreads TBR — ${grBooks.length} books</strong>Last synced: ${grLastSync}`;
 }
 
 loadDeals();
+renderBooks();
 
+// Auto-sync Goodreads on first load (or if cache is empty)
+if (!grBooks.length) loadGoodreads();
 </script>
-
 </body>
 </html>
