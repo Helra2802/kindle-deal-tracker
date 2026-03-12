@@ -1,225 +1,412 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>📚 Kindle Deal Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════════════════════
+   THEME VARIABLES
+══════════════════════════════════════ */
 :root {
-  --burg:       #5C1B2E;
-  --burg-dark:  #3D0F1E;
-  --burg-mid:   #7A2340;
-  --parch:      #FAF5E9;
-  --parch-card: #FFFDF7;
-  --gold:       #C5923C;
-  --gold-lt:    #E2B56A;
-  --forest:     #2A5240;
-  --forest-lt:  #3B7059;
-  --ink:        #180E08;
-  --muted:      #8A7060;
-  --border:     rgba(92,27,46,0.13);
-  --shadow:     0 3px 20px rgba(92,27,46,0.13);
-  --shadow-lg:  0 8px 36px rgba(92,27,46,0.18);
-  --gr-green:   #409D69;
-  --fable-blue: #3B6BAF;
+  --burg:        #5C1B2E;
+  --burg-dark:   #3D0F1E;
+  --burg-mid:    #7A2340;
+  --gold:        #C5923C;
+  --gold-lt:     #E2B56A;
+  --forest:      #2A5240;
+  --forest-lt:   #3B7059;
+  --gr-green:    #3A8C5C;
+  --fable-blue:  #3B6BAF;
+
+  /* light */
+  --bg:          #FAF5E9;
+  --bg-card:     #FFFDF7;
+  --ink:         #180E08;
+  --muted:       #8A7060;
+  --border:      rgba(92,27,46,0.13);
+  --shadow:      0 3px 20px rgba(92,27,46,0.12);
+  --shadow-lg:   0 8px 36px rgba(92,27,46,0.18);
+  --row-hover:   rgba(92,27,46,0.04);
+  --row-sel:     rgba(92,27,46,0.08);
+  --snippet-bg:  #F5EDD6;
+  --toggle-bg:   rgba(255,255,255,0.15);
 }
+[data-theme="dark"] {
+  --bg:          #150C10;
+  --bg-card:     #1E1118;
+  --ink:         #F0E8D8;
+  --muted:       #9E8A78;
+  --border:      rgba(197,146,60,0.15);
+  --shadow:      0 3px 20px rgba(0,0,0,0.4);
+  --shadow-lg:   0 8px 36px rgba(0,0,0,0.5);
+  --row-hover:   rgba(197,146,60,0.06);
+  --row-sel:     rgba(197,146,60,0.12);
+  --snippet-bg:  #2A1A22;
+  --toggle-bg:   rgba(0,0,0,0.2);
+}
+
+/* ══════════════════════════════════════
+   RESET + BASE
+══════════════════════════════════════ */
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 html, body { height:100%; }
 body {
   font-family:'Lora',Georgia,serif;
-  background:var(--parch);
-  color:var(--ink);
+  background:var(--bg); color:var(--ink);
   display:flex; flex-direction:column; min-height:100vh;
-  background-image:
-    radial-gradient(ellipse 60% 40% at 10% 0%,  rgba(197,146,60,.07) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 50% at 90% 100%, rgba(92,27,46,.07)  0%, transparent 70%);
+  transition:background .3s, color .3s;
 }
 
-/* ── HEADER ── */
+/* ══════════════════════════════════════
+   HEADER
+══════════════════════════════════════ */
 header {
   background:linear-gradient(150deg,var(--burg-dark) 0%,var(--burg) 55%,var(--burg-mid) 100%);
-  color:var(--parch); padding:20px 20px 16px;
+  color:#FAF5E9; padding:18px 20px 14px;
   position:relative; overflow:hidden; flex-shrink:0;
 }
 header::after {
   content:''; position:absolute; inset:0; pointer-events:none;
   background:repeating-linear-gradient(-45deg,transparent,transparent 28px,
-    rgba(197,146,60,.04) 28px,rgba(197,146,60,.04) 29px);
+    rgba(197,146,60,.05) 28px,rgba(197,146,60,.05) 29px);
 }
-.header-inner { position:relative; z-index:1; max-width:1100px; margin:0 auto; }
-.header-eyebrow { font-size:11px; letter-spacing:4px; color:var(--gold-lt); text-transform:uppercase; margin-bottom:4px; opacity:.85; }
-header h1 { font-family:'Playfair Display',serif; font-size:clamp(22px,5vw,34px); font-weight:700; line-height:1.1; }
-header p  { font-style:italic; font-size:13px; color:var(--gold-lt); margin-top:4px; opacity:.85; }
+.header-inner {
+  position:relative; z-index:1; max-width:1100px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.header-text {}
+.header-eyebrow { font-size:10px; letter-spacing:4px; color:var(--gold-lt); text-transform:uppercase; margin-bottom:3px; opacity:.85; }
+header h1 { font-family:'Playfair Display',serif; font-size:clamp(20px,4vw,30px); font-weight:700; line-height:1.1; }
+header p  { font-style:italic; font-size:12px; color:var(--gold-lt); margin-top:3px; opacity:.85; }
 
-/* ── NAV ── */
-nav { background:var(--burg); display:flex; flex-shrink:0; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+/* dark mode toggle */
+.dark-toggle {
+  background:var(--toggle-bg); border:1px solid rgba(255,255,255,.2);
+  border-radius:50px; padding:7px 14px; color:#FAF5E9;
+  font-family:'Lora',serif; font-size:12px; cursor:pointer;
+  white-space:nowrap; transition:all .2s; flex-shrink:0;
+}
+.dark-toggle:hover { background:rgba(255,255,255,.2); }
+
+/* ══════════════════════════════════════
+   NAV
+══════════════════════════════════════ */
+nav {
+  background:var(--burg); display:flex; flex-shrink:0;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+}
 nav button {
-  flex:1; min-width:110px; padding:12px 14px;
+  flex:1; min-width:110px; padding:11px 14px;
   background:none; border:none; border-bottom:3px solid transparent;
-  color:rgba(250,245,233,.55); font-family:'Lora',serif; font-size:13px;
+  color:rgba(250,245,233,.5); font-family:'Lora',serif; font-size:13px;
   cursor:pointer; white-space:nowrap; transition:all .18s;
 }
-nav button.active { color:var(--parch); border-bottom-color:var(--gold); background:rgba(255,255,255,.06); }
-nav button:hover:not(.active) { color:var(--parch); background:rgba(255,255,255,.04); }
+nav button.active { color:#FAF5E9; border-bottom-color:var(--gold); background:rgba(255,255,255,.06); }
+nav button:hover:not(.active) { color:#FAF5E9; background:rgba(255,255,255,.04); }
 
-/* ── MAIN ── */
+/* ══════════════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════════════ */
 main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .tab { display:none; flex:1; overflow:hidden; }
 .tab.active { display:flex; flex-direction:column; }
 
-/* ── SECTION HEAD ── */
 .section-head { padding:14px 18px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .section-head h2 { font-family:'Playfair Display',serif; font-size:20px; color:var(--burg); }
+[data-theme="dark"] .section-head h2 { color:var(--gold-lt); }
 .section-head p  { font-size:12px; color:var(--muted); font-style:italic; margin-top:2px; }
 
-/* ── DEALS SPLIT ── */
+/* ══════════════════════════════════════
+   DEALS TAB
+══════════════════════════════════════ */
+.deals-outer { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+/* hero card */
+.hero-wrap { flex-shrink:0; padding:14px 16px 0; }
+.hero-card {
+  background:linear-gradient(135deg,var(--burg-dark),var(--burg-mid));
+  border-radius:14px; padding:16px 18px; display:flex; gap:16px;
+  align-items:center; box-shadow:var(--shadow-lg); cursor:pointer;
+  transition:transform .2s; position:relative; overflow:hidden; margin-bottom:12px;
+}
+.hero-card::before {
+  content:'✦ DEAL OF THE DAY ✦';
+  position:absolute; top:8px; right:12px;
+  font-size:9px; letter-spacing:3px; color:var(--gold-lt); opacity:.7;
+}
+.hero-card:hover { transform:translateY(-2px); }
+.hero-cover {
+  width:70px; min-width:70px; height:100px; border-radius:5px;
+  overflow:hidden; box-shadow:3px 4px 14px rgba(0,0,0,.4);
+  background:rgba(255,255,255,.1); display:flex; align-items:center;
+  justify-content:center; font-size:28px; color:rgba(255,255,255,.4);
+}
+.hero-cover img { width:100%; height:100%; object-fit:cover; border-radius:5px; }
+.hero-info { flex:1; color:#FAF5E9; }
+.hero-label { font-size:10px; letter-spacing:2px; color:var(--gold-lt); text-transform:uppercase; margin-bottom:4px; }
+.hero-title  { font-family:'Playfair Display',serif; font-size:clamp(14px,2.5vw,19px); font-weight:700; line-height:1.25; margin-bottom:4px; }
+.hero-author { font-size:12px; font-style:italic; opacity:.75; margin-bottom:8px; }
+.hero-price  { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--gold-lt); }
+.hero-was    { font-size:12px; text-decoration:line-through; opacity:.55; margin-left:8px; }
+.hero-badge  { background:var(--gold); color:#111; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:8px; }
+
+/* genre filter bar */
+.filter-bar {
+  flex-shrink:0; padding:10px 14px 0;
+  display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.filter-bar::-webkit-scrollbar { display:none; }
+.filter-chip {
+  flex-shrink:0; padding:5px 13px; border-radius:20px;
+  border:1.5px solid var(--border); background:var(--bg-card);
+  color:var(--muted); font-family:'Lora',serif; font-size:12px;
+  cursor:pointer; white-space:nowrap; transition:all .18s;
+}
+.filter-chip.active { background:var(--burg); color:#FAF5E9; border-color:var(--burg); }
+.filter-chip:hover:not(.active) { border-color:var(--gold); color:var(--ink); }
+[data-theme="dark"] .filter-chip:hover:not(.active) { color:var(--ink); }
+
+/* split layout */
 .deals-body { flex:1; display:flex; overflow:hidden; }
-.deals-list { width:300px; min-width:190px; overflow-y:auto; border-right:1px solid var(--border); flex-shrink:0; }
-.deal-row { display:flex; gap:10px; align-items:center; padding:12px 13px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .15s; border-left:3px solid transparent; }
-.deal-row:hover { background:rgba(92,27,46,.04); }
-.deal-row.sel   { background:rgba(92,27,46,.08); border-left-color:var(--gold); }
-.deal-thumb { width:42px; min-width:42px; height:60px; border-radius:3px; background:var(--parch); display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--muted); overflow:hidden; box-shadow:1px 2px 6px rgba(0,0,0,.18); flex-shrink:0; }
+.deals-list { width:290px; min-width:180px; overflow-y:auto; border-right:1px solid var(--border); flex-shrink:0; }
+
+.deal-row {
+  display:flex; gap:10px; align-items:center;
+  padding:11px 13px; border-bottom:1px solid var(--border);
+  cursor:pointer; transition:background .15s; border-left:3px solid transparent;
+}
+.deal-row:hover { background:var(--row-hover); }
+.deal-row.sel   { background:var(--row-sel); border-left-color:var(--gold); }
+
+/* TBR match glow */
+.deal-row.tbr-match { border-left-color:var(--gr-green); }
+.deal-row.tbr-match .deal-thumb { box-shadow:0 0 0 2px var(--gr-green), 1px 2px 6px rgba(0,0,0,.18); }
+.tbr-badge {
+  display:inline-block; background:var(--gr-green); color:white;
+  font-size:9px; font-weight:700; padding:1px 6px; border-radius:10px;
+  letter-spacing:.3px; margin-top:3px;
+}
+
+.deal-thumb {
+  width:40px; min-width:40px; height:58px; border-radius:3px;
+  background:var(--snippet-bg); display:flex; align-items:center; justify-content:center;
+  font-size:15px; color:var(--muted); overflow:hidden;
+  box-shadow:1px 2px 6px rgba(0,0,0,.18); flex-shrink:0;
+}
 .deal-thumb img { width:100%; height:100%; object-fit:cover; border-radius:3px; }
 .deal-row-info { flex:1; min-width:0; }
 .deal-row-title  { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:var(--ink); line-height:1.25; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 .deal-row-author { font-size:11px; color:var(--muted); font-style:italic; margin-top:2px; }
-.deal-row-price  { font-size:12px; color:var(--forest); font-weight:600; margin-top:3px; }
+.deal-row-price  { font-size:12px; color:var(--forest); font-weight:700; margin-top:3px; }
+[data-theme="dark"] .deal-row-price { color:#6FC99A; }
 
-.deal-detail { flex:1; overflow-y:auto; padding:22px 20px; display:flex; flex-direction:column; }
+/* detail pane */
+.deal-detail { flex:1; overflow-y:auto; padding:20px 18px; display:flex; flex-direction:column; }
 .detail-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); font-style:italic; font-size:14px; gap:12px; text-align:center; }
 .detail-empty .big { font-size:48px; }
 
-.detail-book { display:flex; gap:18px; margin-bottom:20px; }
-.detail-cover { width:110px; min-width:110px; height:160px; border-radius:6px; overflow:hidden; box-shadow:4px 6px 20px rgba(0,0,0,.22); background:var(--parch); display:flex; align-items:center; justify-content:center; font-size:36px; color:var(--muted); flex-shrink:0; }
+.detail-book { display:flex; gap:18px; margin-bottom:18px; }
+.detail-cover { width:105px; min-width:105px; height:154px; border-radius:6px; overflow:hidden; box-shadow:4px 6px 20px rgba(0,0,0,.25); background:var(--snippet-bg); display:flex; align-items:center; justify-content:center; font-size:34px; color:var(--muted); flex-shrink:0; }
 .detail-cover img { width:100%; height:100%; object-fit:cover; }
 .detail-meta { flex:1; }
-.detail-title  { font-family:'Playfair Display',serif; font-size:clamp(15px,2.5vw,21px); font-weight:700; line-height:1.25; color:var(--ink); margin-bottom:5px; }
+.detail-title  { font-family:'Playfair Display',serif; font-size:clamp(15px,2.5vw,20px); font-weight:700; line-height:1.25; color:var(--ink); margin-bottom:5px; }
 .detail-author { font-size:13px; color:var(--muted); font-style:italic; margin-bottom:10px; }
-.price-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+.price-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
 .price-now { font-family:'Playfair Display',serif; font-size:22px; color:var(--forest); font-weight:700; }
-.price-was { font-size:14px; color:var(--muted); text-decoration:line-through; }
-.badge { background:var(--burg); color:var(--parch); font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; }
-.stars-row { display:flex; align-items:center; gap:6px; margin-bottom:12px; }
+[data-theme="dark"] .price-now { color:#6FC99A; }
+.price-was { font-size:13px; color:var(--muted); text-decoration:line-through; }
+.badge { background:var(--burg); color:#FAF5E9; font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; }
+.stars-row { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
 .stars { color:var(--gold); font-size:15px; letter-spacing:2px; }
 .stars-count { font-size:12px; color:var(--muted); }
-.detail-desc { font-size:13px; line-height:1.8; color:#3A2A1A; margin-bottom:18px; border-left:3px solid var(--gold); padding-left:14px; font-style:italic; }
 .detail-cats { font-size:11px; color:var(--muted); font-style:italic; margin-bottom:12px; }
 
-.btn-amazon  { display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#FF9900,#E88800); color:#111; border:none; padding:14px 22px; border-radius:10px; font-family:'Lora',serif; font-size:15px; font-weight:700; cursor:pointer; text-decoration:none; width:100%; max-width:380px; box-shadow:0 4px 16px rgba(255,153,0,.35); transition:all .2s; }
-.btn-amazon:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,153,0,.4); }
-.btn-ereader { display:flex; align-items:center; justify-content:center; gap:8px; background:var(--forest); color:white; border:none; padding:11px 22px; border-radius:10px; font-family:'Lora',serif; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; width:100%; max-width:380px; margin-top:10px; transition:all .2s; }
+/* TBR match banner in detail */
+.tbr-match-banner {
+  background:linear-gradient(135deg,rgba(58,140,92,.15),rgba(58,140,92,.07));
+  border:1px solid rgba(58,140,92,.3); border-radius:9px;
+  padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px;
+  font-size:13px; color:var(--gr-green); font-weight:600;
+}
+
+.detail-desc { font-size:13px; line-height:1.8; color:var(--ink); margin-bottom:16px; border-left:3px solid var(--gold); padding-left:14px; font-style:italic; opacity:.85; }
+.btn-amazon  { display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#FF9900,#E88800); color:#111; border:none; padding:13px 20px; border-radius:10px; font-family:'Lora',serif; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; width:100%; max-width:360px; box-shadow:0 4px 14px rgba(255,153,0,.3); transition:all .2s; }
+.btn-amazon:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(255,153,0,.4); }
+.btn-ereader { display:flex; align-items:center; justify-content:center; gap:8px; background:var(--forest); color:white; border:none; padding:11px 20px; border-radius:10px; font-family:'Lora',serif; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; width:100%; max-width:360px; margin-top:9px; transition:all .2s; }
 .btn-ereader:hover { background:var(--forest-lt); transform:translateY(-2px); }
 
-/* ── TRACKED / TBR TAB ── */
+/* ══════════════════════════════════════
+   MY BOOKS TAB
+══════════════════════════════════════ */
 .tracked-body { flex:1; overflow-y:auto; padding:16px; }
-
-/* source toggle */
-.source-toggle { display:flex; gap:0; margin-bottom:18px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border); }
-.source-btn { flex:1; padding:10px 12px; background:var(--parch-card); border:none; font-family:'Lora',serif; font-size:13px; color:var(--muted); cursor:pointer; transition:all .18s; border-right:1px solid var(--border); white-space:nowrap; }
+.source-toggle { display:flex; margin-bottom:16px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border); }
+.source-btn { flex:1; padding:9px 10px; background:var(--bg-card); border:none; border-right:1px solid var(--border); font-family:'Lora',serif; font-size:12px; color:var(--muted); cursor:pointer; transition:all .18s; white-space:nowrap; }
 .source-btn:last-child { border-right:none; }
-.source-btn.active { background:var(--burg); color:var(--parch); font-weight:600; }
-.source-btn:hover:not(.active) { background:rgba(92,27,46,.05); color:var(--ink); }
+.source-btn.active { background:var(--burg); color:#FAF5E9; font-weight:600; }
+.source-btn:hover:not(.active) { background:var(--row-hover); color:var(--ink); }
 
-/* add row */
-.add-row { display:flex; gap:10px; margin-bottom:20px; }
-.add-input { flex:1; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-family:'Lora',serif; font-size:14px; background:var(--parch-card); color:var(--ink); outline:none; transition:border-color .2s; }
+.add-row { display:flex; gap:9px; margin-bottom:18px; }
+.add-input { flex:1; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-family:'Lora',serif; font-size:14px; background:var(--bg-card); color:var(--ink); outline:none; transition:border-color .2s; }
 .add-input:focus { border-color:var(--burg); }
-.btn-add { background:var(--burg); color:var(--parch); border:none; padding:11px 16px; border-radius:9px; font-family:'Lora',serif; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; }
+.btn-add { background:var(--burg); color:#FAF5E9; border:none; padding:11px 15px; border-radius:9px; font-family:'Lora',serif; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; }
 .btn-add:hover { background:var(--burg-dark); }
 
-/* Goodreads banner */
-.gr-banner {
-  background:linear-gradient(135deg,rgba(64,157,105,.12),rgba(64,157,105,.05));
-  border:1px solid rgba(64,157,105,.25); border-radius:10px;
-  padding:12px 14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;
-}
-.gr-banner .gr-icon { font-size:24px; flex-shrink:0; }
+.gr-banner { background:linear-gradient(135deg,rgba(58,140,92,.1),rgba(58,140,92,.04)); border:1px solid rgba(58,140,92,.22); border-radius:10px; padding:11px 13px; margin-bottom:14px; display:flex; align-items:center; gap:11px; }
 .gr-banner-text { flex:1; font-size:12px; color:var(--muted); line-height:1.5; }
 .gr-banner-text strong { color:var(--gr-green); font-size:13px; display:block; margin-bottom:2px; }
-.gr-sync-btn { background:var(--gr-green); color:white; border:none; padding:8px 13px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; }
+.gr-sync-btn { background:var(--gr-green); color:white; border:none; padding:7px 12px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; }
 .gr-sync-btn:hover { opacity:.85; }
 .gr-sync-btn:disabled { opacity:.5; cursor:default; }
 
-/* Fable banner */
-.fable-banner {
-  background:linear-gradient(135deg,rgba(59,107,175,.1),rgba(59,107,175,.04));
-  border:1px solid rgba(59,107,175,.2); border-radius:10px;
-  padding:12px 14px; margin-bottom:16px; display:flex; align-items:center; gap:12px;
-}
-.fable-banner .fable-icon { font-size:24px; flex-shrink:0; }
+.fable-banner { background:linear-gradient(135deg,rgba(59,107,175,.1),rgba(59,107,175,.04)); border:1px solid rgba(59,107,175,.2); border-radius:10px; padding:11px 13px; margin-bottom:14px; display:flex; align-items:center; gap:11px; }
 .fable-banner-text { flex:1; font-size:12px; color:var(--muted); line-height:1.5; }
 .fable-banner-text strong { color:var(--fable-blue); font-size:13px; display:block; margin-bottom:2px; }
-.btn-fable { background:var(--fable-blue); color:white; border:none; padding:8px 13px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; text-decoration:none; display:inline-block; }
+.btn-fable { background:var(--fable-blue); color:white; border:none; padding:7px 12px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; text-decoration:none; display:inline-block; flex-shrink:0; }
 .btn-fable:hover { opacity:.85; }
 
-/* source label pill */
-.source-pill { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; letter-spacing:.3px; margin-bottom:5px; }
-.source-pill.gr     { background:rgba(64,157,105,.15); color:var(--gr-green); }
+.source-pill { display:inline-block; font-size:9px; font-weight:700; padding:2px 7px; border-radius:20px; letter-spacing:.3px; margin-bottom:4px; }
+.source-pill.gr     { background:rgba(58,140,92,.15);  color:var(--gr-green); }
 .source-pill.manual { background:rgba(92,27,46,.1);    color:var(--burg); }
 
-/* book card */
-.tracked-card { background:var(--parch-card); border-radius:12px; padding:14px; margin-bottom:14px; box-shadow:var(--shadow); border-left:3px solid var(--gold); display:flex; gap:14px; align-items:flex-start; animation:slideIn .25s ease; }
+.tracked-card { background:var(--bg-card); border-radius:12px; padding:13px; margin-bottom:13px; box-shadow:var(--shadow); border-left:3px solid var(--gold); display:flex; gap:13px; align-items:flex-start; animation:slideIn .25s ease; }
 .tracked-card.gr-card { border-left-color:var(--gr-green); }
+.tracked-card.avail-highlight { border-left-color:#1a6b9a; box-shadow:0 3px 20px rgba(26,107,154,.18); }
 @keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
-.tracked-cover { width:56px; min-width:56px; height:80px; border-radius:4px; background:var(--parch); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--muted); overflow:hidden; box-shadow:2px 3px 10px rgba(0,0,0,.15); }
+.tracked-cover { width:54px; min-width:54px; height:78px; border-radius:4px; background:var(--snippet-bg); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--muted); overflow:hidden; box-shadow:2px 3px 10px rgba(0,0,0,.15); }
 .tracked-cover img { width:100%; height:100%; object-fit:cover; border-radius:4px; }
 .tracked-info { flex:1; min-width:0; }
-.tracked-title  { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; color:var(--ink); margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tracked-title  { font-family:'Playfair Display',serif; font-size:14px; font-weight:700; color:var(--ink); margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .tracked-author { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:7px; }
 .tracked-actions { display:flex; gap:7px; flex-wrap:wrap; }
-.btn-sm { font-size:12px; padding:5px 11px; border-radius:7px; border:none; font-family:'Lora',serif; font-weight:600; cursor:pointer; transition:all .15s; text-decoration:none; display:inline-block; }
-.btn-sm.amazon  { background:#FF9900; color:#111; }
-.btn-sm.ereader { background:var(--forest); color:white; }
-.btn-sm.gr      { background:var(--gr-green); color:white; }
+.btn-sm { font-size:12px; padding:5px 10px; border-radius:7px; border:none; font-family:'Lora',serif; font-weight:600; cursor:pointer; transition:all .15s; text-decoration:none; display:inline-block; }
+.btn-sm.amazon    { background:#FF9900; color:#111; }
+.btn-sm.ereader   { background:var(--forest); color:white; }
+.btn-sm.gr        { background:var(--gr-green); color:white; }
+.btn-sm.libby     { background:#1a6b9a; color:white; }
+.btn-sm.borrowbox { background:#2e7d4f; color:white; }
 .btn-sm:hover { opacity:.85; transform:translateY(-1px); }
-.remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:17px; padding:4px; border-radius:50%; transition:color .2s; line-height:1; margin-left:auto; align-self:flex-start; }
-.remove-btn:hover { color:var(--burg); }
-.book-snippet { margin-top:8px; padding:8px 10px; background:var(--parch); border-radius:7px; font-size:12px; line-height:1.65; color:var(--muted); font-style:italic; }
 
-/* ── DROPS TAB ── */
+/* ── Library availability section ── */
+.library-check-box {
+  margin-top:10px; padding:10px 12px;
+  background:linear-gradient(135deg,rgba(26,107,154,.07),rgba(46,125,79,.07));
+  border:1px solid rgba(26,107,154,.18); border-radius:9px;
+}
+.library-check-title {
+  font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+  color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:5px;
+}
+.library-check-row {
+  display:flex; align-items:center; gap:8px; margin-bottom:6px;
+  flex-wrap:wrap;
+}
+.library-check-row:last-child { margin-bottom:0; }
+.btn-check-lib {
+  font-size:12px; padding:5px 11px; border-radius:7px; border:none;
+  font-family:'Lora',serif; font-weight:600; cursor:pointer;
+  transition:all .15s; text-decoration:none; display:inline-block; flex-shrink:0;
+}
+.btn-check-lib.libby     { background:#1a6b9a; color:white; }
+.btn-check-lib.borrowbox { background:#2e7d4f; color:white; }
+.btn-check-lib:hover { opacity:.85; transform:translateY(-1px); }
+
+/* availability badge */
+.avail-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:11px; font-weight:700; padding:4px 9px; border-radius:20px;
+  cursor:pointer; border:none; font-family:'Lora',serif; transition:all .2s;
+  flex-shrink:0;
+}
+.avail-badge.unknown  { background:rgba(138,112,96,.1); color:var(--muted); }
+.avail-badge.yes      { background:rgba(46,125,79,.18); color:#1a6b3a; }
+.avail-badge.no       { background:rgba(92,27,46,.1);   color:var(--burg); }
+[data-theme="dark"] .avail-badge.yes { background:rgba(46,125,79,.3); color:#6FCE94; }
+[data-theme="dark"] .avail-badge.no  { background:rgba(92,27,46,.3); color:#E08090; }
+.avail-badge:hover { opacity:.8; }
+
+/* library row — remove old style, replaced above */
+.library-row { display:none; }
+
+/* detail pane library buttons */
+.btn-library {
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  border:none; padding:11px 20px; border-radius:10px;
+  font-family:'Lora',serif; font-size:14px; font-weight:600;
+  cursor:pointer; text-decoration:none; width:100%; max-width:380px;
+  margin-top:9px; transition:all .2s;
+}
+.btn-library.libby     { background:#1a6b9a; color:white; }
+.btn-library.borrowbox { background:#2e7d4f; color:white; }
+.btn-library:hover { opacity:.88; transform:translateY(-2px); }
+.remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; padding:4px; border-radius:50%; transition:color .2s; line-height:1; margin-left:auto; align-self:flex-start; }
+.remove-btn:hover { color:var(--burg); }
+.book-snippet { margin-top:8px; padding:8px 10px; background:var(--snippet-bg); border-radius:7px; font-size:12px; line-height:1.65; color:var(--muted); font-style:italic; }
+
+/* deal match chip on tracked card */
+.deal-match-chip { display:inline-flex; align-items:center; gap:4px; background:rgba(255,153,0,.15); color:#B86A00; font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; margin-top:5px; }
+[data-theme="dark"] .deal-match-chip { background:rgba(255,153,0,.2); color:var(--gold-lt); }
+
+/* ══════════════════════════════════════
+   DROPS TAB
+══════════════════════════════════════ */
 .drops-body { flex:1; overflow-y:auto; padding:16px; }
-.drops-tiles { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.drops-tiles { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
 @media(max-width:500px) { .drops-tiles { grid-template-columns:1fr; } }
-.drop-tile { background:var(--parch-card); border-radius:12px; padding:18px 16px; box-shadow:var(--shadow); text-align:center; }
-.drop-tile h3 { font-family:'Playfair Display',serif; font-size:16px; margin-bottom:6px; }
-.drop-tile p  { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:14px; line-height:1.55; }
-.btn-tile { display:inline-block; padding:10px 18px; border-radius:8px; font-family:'Lora',serif; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; border:none; cursor:pointer; }
-.btn-tile.burg   { background:var(--burg);   color:var(--parch); }
+.drop-tile { background:var(--bg-card); border-radius:12px; padding:17px 15px; box-shadow:var(--shadow); text-align:center; }
+.drop-tile h3 { font-family:'Playfair Display',serif; font-size:15px; margin-bottom:5px; }
+.drop-tile p  { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:13px; line-height:1.55; }
+.btn-tile { display:inline-block; padding:9px 16px; border-radius:8px; font-family:'Lora',serif; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; border:none; cursor:pointer; }
+.btn-tile.burg   { background:var(--burg);   color:#FAF5E9; }
 .btn-tile.forest { background:var(--forest); color:white; }
 .btn-tile.amber  { background:var(--gold);   color:var(--ink); }
 .btn-tile:hover  { transform:translateY(-2px); opacity:.9; }
 
-/* ── LOADING / EMPTY ── */
-.loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; color:var(--muted); gap:12px; }
-.spinner { width:32px; height:32px; border:3px solid rgba(92,27,46,.15); border-top-color:var(--burg); border-radius:50%; animation:spin .8s linear infinite; }
+/* ══════════════════════════════════════
+   LOADING / EMPTY / UTILITY
+══════════════════════════════════════ */
+.loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px; color:var(--muted); gap:12px; }
+.spinner { width:30px; height:30px; border:3px solid rgba(92,27,46,.15); border-top-color:var(--burg); border-radius:50%; animation:spin .8s linear infinite; }
+[data-theme="dark"] .spinner { border-color:rgba(197,146,60,.15); border-top-color:var(--gold); }
 @keyframes spin { to { transform:rotate(360deg); } }
 .loading p { font-style:italic; font-size:13px; }
 .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 20px; color:var(--muted); gap:10px; text-align:center; }
-.empty-state .icon { font-size:44px; }
+.empty-state .icon { font-size:42px; }
 .empty-state p { font-style:italic; font-size:14px; line-height:1.6; }
 
-/* ── RESPONSIVE ── */
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
 @media(max-width:560px) {
-  .deals-list { width:150px; min-width:130px; }
-  .detail-cover { width:80px; min-width:80px; height:116px; }
+  .deals-list { width:145px; min-width:120px; }
+  .detail-cover { width:78px; min-width:78px; height:112px; }
+  .hero-cover { width:56px; min-width:56px; height:82px; }
+}
+@media(max-width:380px) {
+  .deals-list { width:120px; min-width:100px; }
 }
 
-footer { text-align:center; padding:16px; font-size:11px; color:var(--muted); font-style:italic; border-top:1px solid var(--border); flex-shrink:0; }
+footer { text-align:center; padding:14px; font-size:11px; color:var(--muted); font-style:italic; border-top:1px solid var(--border); flex-shrink:0; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="header-eyebrow">✦ &nbsp; Your Literary Companion &nbsp; ✦</div>
-    <h1>📚 Kindle Deal Tracker</h1>
-    <p>Daily deals · Goodreads TBR · price drop alerts — all in one place</p>
+    <div class="header-text">
+      <div class="header-eyebrow">✦ Your Literary Companion ✦</div>
+      <h1>📚 Kindle Deal Tracker</h1>
+      <p>99p deals · Goodreads TBR · price drop alerts</p>
+    </div>
+    <button class="dark-toggle" onclick="toggleDark()" id="dark-btn">🌙 Dark</button>
   </div>
 </header>
 
 <nav>
-  <button class="active" onclick="showTab('deals',this)">🔥 Daily Deals</button>
+  <button class="active" onclick="showTab('deals',this)">🔥 99p Deals</button>
   <button onclick="showTab('tracked',this)">📚 My Books</button>
   <button onclick="showTab('drops',this)">📉 Price Drops</button>
 </nav>
@@ -229,65 +416,93 @@ footer { text-align:center; padding:16px; font-size:11px; color:var(--muted); fo
   <!-- ══ DEALS ══ -->
   <div id="tab-deals" class="tab active">
     <div class="section-head">
-      <h2>Today's Kindle Deals</h2>
-      <p>Select a deal on the left · full details + Amazon link on the right</p>
+      <h2>Today's 99p Kindle Deals</h2>
+      <p>99p books from eReaderIQ · click a deal for full details · hits refresh if empty</p>
     </div>
-    <div class="deals-body">
-      <div class="deals-list" id="deals-list">
-        <div class="loading"><div class="spinner"></div><p>Loading deals…</p></div>
+    <div class="deals-outer">
+      <!-- hero -->
+      <div class="hero-wrap" id="hero-wrap" style="display:none;">
+        <div class="hero-card" id="hero-card" onclick="heroClick()">
+          <div class="hero-cover" id="hero-cover">📖</div>
+          <div class="hero-info">
+            <div class="hero-label">⭐ Featured Deal</div>
+            <div class="hero-title"  id="hero-title">Loading…</div>
+            <div class="hero-author" id="hero-author"></div>
+            <div style="display:flex;align-items:baseline;gap:0;">
+              <span class="hero-price" id="hero-price"></span>
+              <span class="hero-was"   id="hero-was"></span>
+              <span class="hero-badge" id="hero-badge" style="display:none;"></span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="deal-detail" id="deal-detail">
-        <div class="detail-empty">
-          <div class="big">📖</div>
-          <p>Select a deal on the left<br>to see full details here</p>
+
+      <!-- persistent status / retry bar -->
+      <div id="deals-status-bar" style="display:none; flex-shrink:0; padding:8px 14px; background:rgba(92,27,46,.07); border-bottom:1px solid var(--border); display:none; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <span id="deals-status-msg" style="font-size:12px; color:var(--muted); font-style:italic;"></span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button onclick="loadDeals()" style="background:var(--burg);color:#FAF5E9;border:none;padding:6px 14px;border-radius:7px;font-family:'Lora',serif;font-size:12px;font-weight:600;cursor:pointer;">↻ Retry</button>
+          <a href="https://uk.ereaderiq.com/deals" target="_blank" style="font-size:12px;color:var(--burg);font-weight:600;text-decoration:none;">Open eReaderIQ →</a>
+          <a href="https://www.amazon.co.uk/b?node=341677031" target="_blank" style="font-size:12px;color:var(--forest);font-weight:600;text-decoration:none;">Amazon Deals →</a>
+        </div>
+      </div>
+
+      <!-- genre filter -->
+      <div class="filter-bar" id="filter-bar" style="padding-bottom:8px;">
+        <button class="filter-chip active" data-genre="all" onclick="filterGenre('all',this)">📚 All</button>
+      </div>
+
+      <!-- split -->
+      <div class="deals-body">
+        <div class="deals-list" id="deals-list">
+          <div class="loading"><div class="spinner"></div><p>Loading 99p deals…</p></div>
+        </div>
+        <div class="deal-detail" id="deal-detail">
+          <div class="detail-empty">
+            <div class="big">📖</div>
+            <p>Select a deal on the left<br>to see full details here</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ══ TRACKED / TBR ══ -->
+  <!-- ══ MY BOOKS ══ -->
   <div id="tab-tracked" class="tab">
     <div class="section-head">
       <h2>My Books</h2>
-      <p>Your Goodreads TBR + manually tracked books, all in one place</p>
+      <p>Goodreads TBR + manually tracked — with deal alerts</p>
     </div>
     <div class="tracked-body">
-
-      <!-- Source toggle -->
       <div class="source-toggle">
-        <button class="source-btn active" id="src-all"  onclick="switchSource('all',this)">📚 All Books</button>
-        <button class="source-btn"        id="src-gr"   onclick="switchSource('gr',this)">🌿 Goodreads TBR</button>
-        <button class="source-btn"        id="src-mine" onclick="switchSource('mine',this)">🔖 My Tracked</button>
-        <button class="source-btn"        id="src-fab"  onclick="switchSource('fable',this)">📖 Fable</button>
+        <button class="source-btn active" onclick="switchSource('all',this)">📚 All</button>
+        <button class="source-btn"        onclick="switchSource('gr',this)">🌿 Goodreads</button>
+        <button class="source-btn"        onclick="switchSource('mine',this)">🔖 Mine</button>
+        <button class="source-btn"        onclick="switchSource('fable',this)">📖 Fable</button>
       </div>
 
-      <!-- Goodreads banner -->
       <div class="gr-banner" id="gr-banner">
-        <div class="gr-icon">🌿</div>
+        <div style="font-size:22px;">🌿</div>
         <div class="gr-banner-text">
-          <strong>Goodreads TBR connected</strong>
-          Syncing your Want to Read shelf automatically
+          <strong id="gr-banner-title">Goodreads TBR</strong>
+          <span id="gr-banner-sub">Tap Sync to load your Want to Read shelf</span>
         </div>
         <button class="gr-sync-btn" id="gr-sync-btn" onclick="loadGoodreads()">↻ Sync</button>
       </div>
 
-      <!-- Add manually -->
-      <div id="manual-add-section">
-        <div class="add-row">
-          <input id="track-input" class="add-input" placeholder="Add a book manually — title or author…"
-                 onkeypress="if(event.key==='Enter') addTracked()">
-          <button class="btn-add" onclick="addTracked()">+ Add</button>
-        </div>
-      </div>
-
-      <!-- Fable note (shown only on fable tab) -->
-      <div class="fable-banner" id="fable-banner" style="display:none;">
-        <div class="fable-icon">📖</div>
+      <div id="fable-banner" class="fable-banner" style="display:none;">
+        <div style="font-size:22px;">📖</div>
         <div class="fable-banner-text">
-          <strong>Fable doesn't have a public API yet</strong>
-          Open Fable to view your shelves — we'll keep checking for an integration!
+          <strong>Fable — no public API yet</strong>
+          Open Fable to view your shelves. We'll add it the moment they release an API!
         </div>
         <a class="btn-fable" href="https://fable.co" target="_blank">Open Fable →</a>
+      </div>
+
+      <div id="manual-add" class="add-row">
+        <input id="track-input" class="add-input" placeholder="Add a book manually — title or author…"
+               onkeypress="if(event.key==='Enter')addTracked()">
+        <button class="btn-add" onclick="addTracked()">+ Add</button>
       </div>
 
       <div id="tracked-list"></div>
@@ -298,28 +513,28 @@ footer { text-align:center; padding:16px; font-size:11px; color:var(--muted); fo
   <div id="tab-drops" class="tab">
     <div class="section-head">
       <h2>Price Drop Alerts</h2>
-      <p>Set target prices and get notified the moment a deal hits</p>
+      <p>Set target prices and get notified when they drop</p>
     </div>
     <div class="drops-body">
       <div class="drops-tiles">
         <div class="drop-tile" style="border-top:4px solid var(--forest);">
           <h3 style="color:var(--forest);">📉 eReaderIQ</h3>
-          <p>The best Kindle price tracker. Set a target price, get an email when it drops.</p>
+          <p>Best Kindle tracker. Set a target price, get emailed when it drops.</p>
           <a class="btn-tile forest" href="https://uk.ereaderiq.com/track/drops#login" target="_blank">Open Dashboard →</a>
         </div>
         <div class="drop-tile" style="border-top:4px solid var(--gold);">
           <h3 style="color:var(--gold);">🐪 CamelCamelCamel</h3>
-          <p>Full Amazon price history charts. See the lowest a book has ever been.</p>
+          <p>Full Amazon price history. See the lowest a book has ever been.</p>
           <a class="btn-tile amber" href="https://uk.camelcamelcamel.com" target="_blank">View History →</a>
         </div>
         <div class="drop-tile" style="border-top:4px solid var(--burg);">
           <h3 style="color:var(--burg);">🔔 Set an Alert</h3>
-          <p>Paste any Amazon book URL into eReaderIQ to track its exact price.</p>
+          <p>Paste any Amazon book URL into eReaderIQ to track its price.</p>
           <a class="btn-tile burg" href="https://uk.ereaderiq.com/search/books/" target="_blank">Search Books →</a>
         </div>
         <div class="drop-tile" style="border-top:4px solid var(--muted);">
           <h3>📬 Daily Email</h3>
-          <p>eReaderIQ emails you daily with all books that hit their target price.</p>
+          <p>eReaderIQ emails you when any tracked book hits your target price.</p>
           <a class="btn-tile forest" href="https://uk.ereaderiq.com/account/settings/" target="_blank">Email Settings →</a>
         </div>
       </div>
@@ -328,18 +543,71 @@ footer { text-align:center; padding:16px; font-size:11px; color:var(--muted); fo
 
 </main>
 
-<footer>✦ &nbsp; Deals via eReaderIQ RSS &nbsp;•&nbsp; Book data via Google Books &nbsp;•&nbsp; TBR via Goodreads &nbsp; ✦</footer>
+<footer>✦ &nbsp; 99p deals via eReaderIQ &nbsp;•&nbsp; Book data via Google Books &nbsp;•&nbsp; TBR via Goodreads &nbsp; ✦</footer>
 
 <script>
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 // CONFIG
-// ─────────────────────────────────────────────
-const GOODREADS_USER_ID = '186981953';
-const PROXY = 'https://api.allorigins.win/raw?url=';
+// ═══════════════════════════════════════════════════
+const GR_USER = '186981953';
 
-// ─────────────────────────────────────────────
+// Your library search URLs
+const LIBBY_URL    = title => `https://librariesniuk.overdrive.com/search?query=${encodeURIComponent(title)}`;
+const BORROWBOX_URL = title => `https://liveborders.borrowbox.com/`;  // BorrowBox opens to search page (no deep-link supported)
+
+// Multiple proxies tried in order — if one fails, next is attempted
+const PROXIES = [
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+];
+
+async function proxyFetch(url, timeout = 12000) {
+  const errors = [];
+  for (const makeProxy of PROXIES) {
+    try {
+      const proxyUrl = makeProxy(url);
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(timeout) });
+      if (res.ok) {
+        const text = await res.text();
+        // Make sure we got real content, not an error page
+        if (text && text.length > 100 && !text.includes('"error"')) {
+          // Return a fake Response-like object with the text
+          return { ok: true, text: async () => text };
+        }
+      }
+    } catch(e) { errors.push(e.message); }
+  }
+  throw new Error('All proxies failed: ' + errors.join(', '));
+}
+
+// Multiple RSS feed URLs to try for eReaderIQ UK 99p deals
+const EREADERIQ_FEEDS = [
+  'https://uk.ereaderiq.com/deals',
+  'https://uk.ereaderiq.com/rss/daily-deals',
+  'https://uk.ereaderiq.com/browse/ebooks/price/asc/?priceto=0.99&format=rss',
+  'https://uk.ereaderiq.com/rss/price-drops',
+];
+
+// ═══════════════════════════════════════════════════
+// DARK MODE
+// ═══════════════════════════════════════════════════
+let isDark = localStorage.getItem('kdt-dark') === '1';
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('dark-btn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+}
+function toggleDark() {
+  isDark = !isDark;
+  localStorage.setItem('kdt-dark', isDark ? '1' : '0');
+  applyTheme();
+}
+applyTheme();
+
+// ═══════════════════════════════════════════════════
 // TABS
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -347,10 +615,10 @@ function showTab(name, btn) {
   btn.classList.add('active');
 }
 
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 // HELPERS
-// ─────────────────────────────────────────────
-function stars(r) {
+// ═══════════════════════════════════════════════════
+function starStr(r) {
   if (!r) return '';
   const f = Math.round(r);
   return '★'.repeat(f) + '☆'.repeat(5 - f);
@@ -359,6 +627,16 @@ function pctOff(orig, sale) {
   if (!orig || !sale || orig <= sale) return null;
   return Math.round((1 - sale / orig) * 100) + '% off';
 }
+function normTitle(t) {
+  return (t || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g,' ').trim();
+}
+function titleMatch(a, b) {
+  const na = normTitle(a), nb = normTitle(b);
+  if (!na || !nb) return false;
+  // match if one contains the other (handles subtitle differences)
+  return na.includes(nb.slice(0,20)) || nb.includes(na.slice(0,20));
+}
+
 async function fetchGoogleBooks(query) {
   try {
     const q = encodeURIComponent(query.replace(/[^\w\s]/g, '').trim().slice(0, 70));
@@ -369,7 +647,7 @@ async function fetchGoogleBooks(query) {
     return {
       title:       v.title || query,
       author:      v.authors?.[0] || '',
-      cover:       (v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '').replace('http:', 'https:'),
+      cover:       (v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '').replace('http:','https:'),
       rating:      v.averageRating || null,
       ratingCount: v.ratingsCount  || null,
       description: v.description   || '',
@@ -379,31 +657,69 @@ async function fetchGoogleBooks(query) {
   } catch { return null; }
 }
 
-// ─────────────────────────────────────────────
-// DEALS
-// ─────────────────────────────────────────────
-let dealsData = [];
+// ═══════════════════════════════════════════════════
+// DEALS STATE
+// ═══════════════════════════════════════════════════
+let allDeals     = [];   // all 99p deals (enriched)
+let filteredDeals = [];  // after genre filter
+let currentGenre = 'all';
+let heroIdx      = 0;
 
+// ═══════════════════════════════════════════════════
+// LOAD DEALS
+// ═══════════════════════════════════════════════════
 async function loadDeals() {
   const list   = document.getElementById('deals-list');
   const detail = document.getElementById('deal-detail');
+
+  // Show a status message while trying
+  list.innerHTML = `<div class="loading"><div class="spinner"></div><p>Fetching 99p deals…</p></div>`;
+
   try {
-    const url = PROXY + encodeURIComponent('https://uk.ereaderiq.com/rss/daily-deals');
-    const res = await fetch(url, { signal: AbortSignal.timeout(9000) });
-    const xml = new DOMParser().parseFromString(await res.text(), 'text/xml');
-    const items = [...xml.querySelectorAll('item')].slice(0, 14);
-    if (!items.length) throw new Error('empty');
+    let items = [];
+    let lastErr = '';
 
-    dealsData = items.map(item => {
-      const rawTitle = item.querySelector('title')?.textContent || 'Unknown';
-      const link     = item.querySelector('link')?.textContent  || '#';
-      const desc     = item.querySelector('description')?.textContent || '';
-      const prices   = desc.match(/£[\d.]+/g) || [];
-      return { rawTitle, link, salePrice: prices[0] || null, wasPrice: prices[1] || null, info: null };
-    });
+    // Try each feed URL until we get results
+    for (const feedUrl of EREADERIQ_FEEDS) {
+      try {
+        const res  = await proxyFetch(feedUrl, 12000);
+        const text = await res.text();
+        const xml  = new DOMParser().parseFromString(text, 'text/xml');
+        if (!xml.querySelector('parsererror')) {
+          items = [...xml.querySelectorAll('item')];
+          if (items.length) break;
+        }
+      } catch(e) { lastErr = e.message; }
+    }
 
+    if (!items.length) throw new Error(lastErr || 'No items in any feed');
+
+    // Parse + filter 99p only
+    const parsed = items.map(item => {
+      const rawTitle  = item.querySelector('title')?.textContent || '';
+      const link      = item.querySelector('link')?.textContent  || '#';
+      const desc      = item.querySelector('description')?.textContent || '';
+      // Try multiple price patterns: £0.99, $0.99, 0.99
+      const prices    = desc.match(/£[\d.]+/g) || desc.match(/[\d.]+/g) || [];
+      const salePrice = prices[0] ? (prices[0].startsWith('£') ? prices[0] : '£'+prices[0]) : null;
+      const wasPrice  = prices[1] ? (prices[1].startsWith('£') ? prices[1] : '£'+prices[1]) : null;
+      return { rawTitle, link, salePrice, wasPrice, info: null, genre: '' };
+    }).filter(d => d.rawTitle && d.salePrice);
+
+    // Try strict 99p filter first, fall back to all deals if none found
+    let finalDeals = parsed.filter(d => d.salePrice === '£0.99');
+    if (!finalDeals.length) finalDeals = parsed; // show all if no 99p found today
+
+    if (!finalDeals.length) throw new Error('no deals parsed');
+
+    // Deals loaded — hide status bar
+    document.getElementById('deals-status-bar').style.display = 'none';
+    allDeals = finalDeals;
+    filteredDeals = [...allDeals];
+
+    // Skeleton rows
     list.innerHTML = '';
-    dealsData.forEach((d, i) => {
+    allDeals.forEach((d, i) => {
       const row = document.createElement('div');
       row.className = 'deal-row';
       row.id = 'row-' + i;
@@ -412,144 +728,330 @@ async function loadDeals() {
         <div class="deal-thumb">📖</div>
         <div class="deal-row-info">
           <div class="deal-row-title">${d.rawTitle}</div>
-          <div class="deal-row-price">${d.salePrice || ''}</div>
+          <div class="deal-row-price">£0.99</div>
         </div>`;
       list.appendChild(row);
     });
 
-    for (let i = 0; i < dealsData.length; i++) {
-      const info = await fetchGoogleBooks(dealsData[i].rawTitle);
-      dealsData[i].info = info;
+    // Show hero placeholder
+    document.getElementById('hero-wrap').style.display = 'block';
+    document.getElementById('hero-title').textContent = allDeals[0].rawTitle;
+    document.getElementById('hero-price').textContent = '£0.99';
+
+    // Auto-select first
+    selectDealRaw(0);
+
+    // Enrich one by one
+    const genres = new Set(['all']);
+    for (let i = 0; i < allDeals.length; i++) {
+      const info = await fetchGoogleBooks(allDeals[i].rawTitle);
+      allDeals[i].info = info;
+      if (info?.categories) {
+        const g = info.categories.split('/')[0].trim();
+        allDeals[i].genre = g;
+        genres.add(g);
+      }
+
+      // update row
       const row = document.getElementById('row-' + i);
       if (row && info) {
         if (info.cover) row.querySelector('.deal-thumb').innerHTML = `<img src="${info.cover}" alt="">`;
         row.querySelector('.deal-row-title').textContent = info.title;
         if (info.author) {
-          const a = document.createElement('div');
-          a.className = 'deal-row-author';
+          let a = row.querySelector('.deal-row-author');
+          if (!a) {
+            a = document.createElement('div');
+            a.className = 'deal-row-author';
+            row.querySelector('.deal-row-info').insertBefore(a, row.querySelector('.deal-row-price'));
+          }
           a.textContent = info.author;
-          row.querySelector('.deal-row-info').insertBefore(a, row.querySelector('.deal-row-price'));
         }
-        if (row.classList.contains('sel')) selectDeal(i);
       }
-    }
-    if (dealsData.length) selectDeal(0);
 
-  } catch {
-    list.innerHTML = `<div class="empty-state"><div class="icon">😔</div><p>Deals couldn't load today.<br>Amazon's servers may be busy.</p></div>`;
+      // update TBR badges
+      updateTBRBadges();
+
+      // update hero if first
+      if (i === 0) updateHero(0);
+
+      // update detail if this row is selected
+      if (row?.classList.contains('sel')) selectDealRaw(i);
+    }
+
+    // Build genre filter chips
+    buildGenreChips([...genres]);
+
+    // Final re-render
+    updateTBRBadges();
+
+  } catch(e) {
+    // Show the persistent status bar so Retry is always visible
+    const bar = document.getElementById('deals-status-bar');
+    bar.style.display = 'flex';
+    document.getElementById('deals-status-msg').textContent = "Couldn't reach the deal feed — proxy servers may be busy.";
+
+    list.innerHTML = `
+      <div class="empty-state" style="padding:20px 14px;">
+        <div class="icon">📡</div>
+        <p style="font-size:12px;">Use the <strong>↻ Retry</strong> button above,<br>or open eReaderIQ directly.</p>
+      </div>`;
     detail.innerHTML = `
       <div class="detail-empty">
-        <div class="big">📚</div>
-        <p style="margin-bottom:16px;">View today's deals directly on Amazon:</p>
-        <a class="btn-amazon" href="https://www.amazon.co.uk/b?node=216326542031" target="_blank">Open Kindle Daily Deals →</a>
+        <div class="big">📡</div>
+        <p>Press <strong>↻ Retry</strong> above the list,<br>or use the direct links to browse deals.</p>
       </div>`;
   }
 }
 
-function selectDeal(i) {
-  document.querySelectorAll('.deal-row').forEach((r, j) => r.classList.toggle('sel', j === i));
-  const d    = dealsData[i];
+function buildGenreChips(genres) {
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'filter-chip active';
+  all.dataset.genre = 'all';
+  all.textContent = '📚 All';
+  all.onclick = () => filterGenre('all', all);
+  bar.appendChild(all);
+
+  const icons = { Fiction:'📖', 'Literary Fiction':'✍️', Romance:'💕', Mystery:'🔍', Thriller:'🕵️', 'Science Fiction':'🚀', Fantasy:'🧙', Biography:'👤', History:'🏛️', 'Self-Help':'💡', Horror:'👻', Humor:'😄' };
+  genres.filter(g => g !== 'all').sort().forEach(g => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-chip';
+    btn.dataset.genre = g;
+    btn.textContent = (icons[g] || '📂') + ' ' + g;
+    btn.onclick = () => filterGenre(g, btn);
+    bar.appendChild(btn);
+  });
+}
+
+function filterGenre(genre, btn) {
+  currentGenre = genre;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filteredDeals = genre === 'all' ? [...allDeals] : allDeals.filter(d => d.genre === genre);
+  rebuildList();
+}
+
+function rebuildList() {
+  const list = document.getElementById('deals-list');
+  list.innerHTML = '';
+  if (!filteredDeals.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>No 99p deals in this genre today.</p></div>`;
+    document.getElementById('deal-detail').innerHTML = `<div class="detail-empty"><div class="big">📖</div><p>No deals for this genre</p></div>`;
+    return;
+  }
+  filteredDeals.forEach((d, i) => {
+    const origIdx = allDeals.indexOf(d);
+    const isTBR   = isTBRMatch(d);
+    const row = document.createElement('div');
+    row.className = 'deal-row' + (isTBR ? ' tbr-match' : '');
+    row.id = 'frow-' + i;
+    row.onclick = () => selectDeal(origIdx);
+    const cover = d.info?.cover;
+    const title  = d.info?.title  || d.rawTitle;
+    const author = d.info?.author || '';
+    row.innerHTML = `
+      <div class="deal-thumb">${cover ? `<img src="${cover}" alt="">` : '📖'}</div>
+      <div class="deal-row-info">
+        <div class="deal-row-title">${title}</div>
+        ${author ? `<div class="deal-row-author">${author}</div>` : ''}
+        <div class="deal-row-price">£0.99</div>
+        ${isTBR ? `<div class="tbr-badge">🌿 On your TBR!</div>` : ''}
+      </div>`;
+    list.appendChild(row);
+  });
+  // select first
+  if (filteredDeals.length) selectDeal(allDeals.indexOf(filteredDeals[0]));
+}
+
+// ═══════════════════════════════════════════════════
+// SELECT DEAL + DETAIL PANE
+// ═══════════════════════════════════════════════════
+function selectDeal(origIdx) {
+  // mark all filtered rows
+  document.querySelectorAll('.deal-row').forEach(r => r.classList.remove('sel'));
+  const fi = filteredDeals.indexOf(allDeals[origIdx]);
+  const frow = document.getElementById('frow-' + fi);
+  if (frow) frow.classList.add('sel');
+  selectDealRaw(origIdx);
+}
+
+function selectDealRaw(i) {
+  const d    = allDeals[i];
+  if (!d) return;
   const info = d.info;
   const detail = document.getElementById('deal-detail');
-
   const title  = info?.title  || d.rawTitle;
   const author = info?.author || '';
   const cover  = info?.cover  || '';
   const rating = info?.rating;
   const rCount = info?.ratingCount;
-  const desc   = info?.description ? info.description.slice(0, 300) + (info.description.length > 300 ? '…' : '') : '';
+  const desc   = info?.description ? info.description.slice(0,300) + (info.description.length > 300 ? '…' : '') : '';
   const cats   = info?.categories || '';
   const pages  = info?.pageCount  || '';
-  const sNum   = d.salePrice ? parseFloat(d.salePrice.replace('£', '')) : null;
-  const wNum   = d.wasPrice  ? parseFloat(d.wasPrice.replace('£', ''))  : null;
-  const badge  = pctOff(wNum, sNum);
-  const amzUrl = d.link !== '#' ? d.link : `https://www.amazon.co.uk/s?k=${encodeURIComponent(title + ' kindle')}&i=digital-text`;
+  const badge  = pctOff(d.wasPrice ? parseFloat(d.wasPrice.replace('£','')) : null, 0.99);
+  const amzUrl = d.link !== '#' ? d.link : `https://www.amazon.co.uk/s?k=${encodeURIComponent(title+' kindle')}&i=digital-text`;
   const erUrl  = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(title)}`;
+  const isTBR  = isTBRMatch(d);
 
   detail.innerHTML = `
+    ${isTBR ? `<div class="tbr-match-banner">🌿 &nbsp; This book is on your Goodreads TBR — grab it while it's 99p!</div>` : ''}
     <div class="detail-book">
       <div class="detail-cover">${cover ? `<img src="${cover}" alt="">` : '📖'}</div>
       <div class="detail-meta">
         <div class="detail-title">${title}</div>
         ${author ? `<div class="detail-author">by ${author}</div>` : ''}
         <div class="price-row">
-          ${d.salePrice ? `<span class="price-now">${d.salePrice}</span>` : ''}
-          ${d.wasPrice  ? `<span class="price-was">${d.wasPrice}</span>`  : ''}
-          ${badge       ? `<span class="badge">${badge}</span>`           : ''}
+          <span class="price-now">£0.99</span>
+          ${d.wasPrice ? `<span class="price-was">${d.wasPrice}</span>` : ''}
+          ${badge      ? `<span class="badge">${badge}</span>` : ''}
         </div>
-        ${rating ? `<div class="stars-row"><span class="stars">${stars(rating)}</span><span class="stars-count">${rating}${rCount ? ` (${Number(rCount).toLocaleString()})` : ''}</span></div>` : ''}
-        ${cats   ? `<div class="detail-cats">📂 ${cats}${pages ? ` &nbsp;·&nbsp; 📄 ${pages} pages` : ''}</div>` : ''}
+        ${rating ? `<div class="stars-row"><span class="stars">${starStr(rating)}</span><span class="stars-count">${rating}${rCount ? ` (${Number(rCount).toLocaleString()})` : ''}</span></div>` : ''}
+        ${cats   ? `<div class="detail-cats">📂 ${cats}${pages ? ` · 📄 ${pages} pages` : ''}</div>` : ''}
       </div>
     </div>
     ${desc ? `<div class="detail-desc">${desc}</div>` : ''}
-    <a class="btn-amazon"  href="${amzUrl}" target="_blank" rel="noopener">🛒 &nbsp; View on Amazon →</a>
-    <a class="btn-ereader" href="${erUrl}"  target="_blank" rel="noopener">📉 &nbsp; Track price on eReaderIQ</a>`;
+    <a class="btn-amazon"  href="${amzUrl}" target="_blank" rel="noopener">🛒 &nbsp; Buy on Amazon — £0.99 →</a>
+    <a class="btn-ereader" href="${erUrl}"  target="_blank" rel="noopener">📉 &nbsp; Track price on eReaderIQ</a>
+    <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);">
+      <div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:8px;">📚 Check your libraries first — it might be free!</div>
+      <a class="btn-library libby"     href="${LIBBY_URL(title)}"     target="_blank" rel="noopener">📖 &nbsp; Search Libraries NI (Libby) →</a>
+      <a class="btn-library borrowbox" href="${BORROWBOX_URL(title)}" target="_blank" rel="noopener">📗 &nbsp; Search LIVE Borders (BorrowBox) →</a>
+    </div>`;
 }
 
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+// HERO CARD
+// ═══════════════════════════════════════════════════
+function updateHero(i) {
+  const d = allDeals[i];
+  if (!d) return;
+  heroIdx = i;
+  const info = d.info;
+  const title  = info?.title  || d.rawTitle;
+  const author = info?.author || '';
+  const cover  = info?.cover  || '';
+  const badge  = pctOff(d.wasPrice ? parseFloat(d.wasPrice.replace('£','')) : null, 0.99);
+
+  document.getElementById('hero-title').textContent  = title;
+  document.getElementById('hero-author').textContent = author ? 'by ' + author : '';
+  document.getElementById('hero-price').textContent  = '£0.99';
+  document.getElementById('hero-was').textContent    = d.wasPrice ? d.wasPrice : '';
+
+  const badgeEl = document.getElementById('hero-badge');
+  if (badge) { badgeEl.textContent = badge; badgeEl.style.display = 'inline-block'; }
+  else badgeEl.style.display = 'none';
+
+  const coverEl = document.getElementById('hero-cover');
+  coverEl.innerHTML = cover ? `<img src="${cover}" alt="">` : '📖';
+}
+
+function heroClick() {
+  if (allDeals.length) {
+    showTab('deals', document.querySelector('nav button'));
+    selectDeal(heroIdx);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// TBR MATCHING
+// ═══════════════════════════════════════════════════
+function isTBRMatch(deal) {
+  if (!grBooks.length) return false;
+  const dealTitle = deal.info?.title || deal.rawTitle;
+  return grBooks.some(b => titleMatch(b.title, dealTitle));
+}
+
+function updateTBRBadges() {
+  // update list rows
+  document.querySelectorAll('.deal-row').forEach((row, i) => {
+    const d = filteredDeals[i] || allDeals[i];
+    if (!d) return;
+    if (isTBRMatch(d)) {
+      row.classList.add('tbr-match');
+      if (!row.querySelector('.tbr-badge')) {
+        const badge = document.createElement('div');
+        badge.className = 'tbr-badge';
+        badge.textContent = '🌿 On your TBR!';
+        row.querySelector('.deal-row-info')?.appendChild(badge);
+      }
+    }
+  });
+  // update tracked cards (deal match chips)
+  renderBooks();
+}
+
+// ═══════════════════════════════════════════════════
 // GOODREADS TBR
-// ─────────────────────────────────────────────
-let grBooks = JSON.parse(localStorage.getItem('kdt-gr') || '[]');
+// ═══════════════════════════════════════════════════
+let grBooks    = JSON.parse(localStorage.getItem('kdt-gr') || '[]');
 let grLastSync = localStorage.getItem('kdt-gr-sync') || null;
 
 async function loadGoodreads() {
   const btn = document.getElementById('gr-sync-btn');
-  const banner = document.querySelector('.gr-banner-text');
+  const sub = document.getElementById('gr-banner-sub');
   btn.disabled = true;
   btn.textContent = '↻ Syncing…';
+  sub.textContent = 'Connecting to Goodreads…';
+
+  const feedUrl = `https://www.goodreads.com/review/list_rss/${GR_USER}?shelf=to-read`;
 
   try {
-    const feedUrl = encodeURIComponent(`https://www.goodreads.com/review/list_rss/${GOODREADS_USER_ID}?shelf=to-read`);
-    const res = await fetch(PROXY + feedUrl, { signal: AbortSignal.timeout(12000) });
+    const res  = await proxyFetch(feedUrl, 14000);
     const text = await res.text();
     const xml  = new DOMParser().parseFromString(text, 'text/xml');
+
+    // Check for parse error
+    if (xml.querySelector('parsererror')) throw new Error('parse error');
+
     const items = [...xml.querySelectorAll('item')];
-    if (!items.length) throw new Error('empty');
+    if (!items.length) throw new Error('empty shelf');
 
-    const parsed = items.map(item => {
-      const title  = item.querySelector('title')?.textContent || '';
-      const author = item.querySelector('author_name')?.textContent
-                  || item.querySelector('author')?.textContent || '';
-      const cover  = item.querySelector('book_large_image_url')?.textContent
-                  || item.querySelector('book_image_url')?.textContent || '';
-      const grLink = item.querySelector('link')?.textContent || '';
-      const rating = parseFloat(item.querySelector('average_rating')?.textContent) || null;
-      const desc   = item.querySelector('book_description')?.textContent
-                  || item.querySelector('description')?.textContent || '';
-      // strip HTML from description
-      const cleanDesc = desc.replace(/<[^>]*>/g, '').trim();
-      return {
-        title:       title.replace(/\s*\(.*?\)\s*/g, '').trim(),
-        author:      author.replace(/\s*\(.*?\)\s*/g, '').trim(),
-        cover:       cover.replace('http:', 'https:'),
-        rating,
-        ratingCount: null,
-        description: cleanDesc,
-        grLink,
-        source:      'gr',
+    grBooks = items.map(item => {
+      const getTag = (...names) => {
+        for (const n of names) {
+          const el = item.querySelector(n);
+          if (el?.textContent?.trim()) return el.textContent.trim();
+        }
+        return '';
       };
-    });
+      const title  = getTag('title').replace(/\s*\(.*?\)\s*$/,'').trim();
+      const author = getTag('author_name','author').replace(/\s*\(.*?\)\s*$/,'').trim();
+      const cover  = getTag('book_large_image_url','book_image_url','book_small_image_url').replace('http:','https:');
+      const rating = parseFloat(getTag('average_rating')) || null;
+      const desc   = getTag('book_description','description').replace(/<[^>]*>/g,'').trim();
+      const grLink = getTag('link');
+      return { title, author, cover, rating, description:desc, grLink, source:'gr' };
+    }).filter(b => b.title);
 
-    grBooks = parsed;
     localStorage.setItem('kdt-gr', JSON.stringify(grBooks));
-    grLastSync = new Date().toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+    grLastSync = new Date().toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     localStorage.setItem('kdt-gr-sync', grLastSync);
 
-    banner.innerHTML = `<strong>Goodreads TBR — ${grBooks.length} books</strong>Last synced: ${grLastSync}`;
+    document.getElementById('gr-banner-title').textContent = `Goodreads TBR — ${grBooks.length} books`;
+    sub.textContent = `Last synced: ${grLastSync}`;
     btn.textContent = '↻ Sync';
     btn.disabled = false;
+
+    updateTBRBadges();
     renderBooks();
 
-  } catch {
-    banner.innerHTML = `<strong>Goodreads TBR</strong>Couldn't sync right now — Goodreads may be busy. Try again shortly.`;
+  } catch(err) {
+    sub.textContent = 'Sync failed — check your Goodreads profile is set to Public, then retry.';
     btn.textContent = '↻ Retry';
     btn.disabled = false;
   }
 }
 
-// ─────────────────────────────────────────────
+// Restore cached data
+if (grBooks.length && grLastSync) {
+  document.getElementById('gr-banner-title').textContent = `Goodreads TBR — ${grBooks.length} books`;
+  document.getElementById('gr-banner-sub').textContent   = `Last synced: ${grLastSync}`;
+}
+
+// ═══════════════════════════════════════════════════
 // MANUAL TRACKED BOOKS
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 let manualBooks = JSON.parse(localStorage.getItem('kdt-manual') || '[]');
 function saveManual() { localStorage.setItem('kdt-manual', JSON.stringify(manualBooks)); }
 
@@ -561,14 +1063,12 @@ async function addTracked() {
   const orig = input.placeholder;
   input.placeholder = `Looking up "${q}"…`;
   input.value = '';
-
   const info = await fetchGoogleBooks(q);
   manualBooks.unshift({
     title:       info?.title       || q,
     author:      info?.author      || '',
     cover:       info?.cover       || '',
     rating:      info?.rating      || null,
-    ratingCount: info?.ratingCount || null,
     description: info?.description || '',
     source:      'manual',
   });
@@ -578,101 +1078,147 @@ async function addTracked() {
   input.disabled = false;
 }
 
-function removeBook(source, i) {
-  if (source === 'manual') {
-    manualBooks.splice(i, 1);
-    saveManual();
-  }
+function removeBook(i) {
+  manualBooks.splice(i, 1);
+  saveManual();
   renderBooks();
 }
 
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 // SOURCE FILTER + RENDER
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 let currentSource = 'all';
 
 function switchSource(src, btn) {
   currentSource = src;
   document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-
-  const grBanner     = document.getElementById('gr-banner');
-  const fableBanner  = document.getElementById('fable-banner');
-  const manualAdd    = document.getElementById('manual-add-section');
-
-  grBanner.style.display    = (src === 'all' || src === 'gr')    ? 'flex' : 'none';
-  fableBanner.style.display = (src === 'fable')                  ? 'flex' : 'none';
-  manualAdd.style.display   = (src === 'all' || src === 'mine')  ? 'block': 'none';
-
+  document.getElementById('gr-banner').style.display    = (src==='all'||src==='gr')   ? 'flex':'none';
+  document.getElementById('fable-banner').style.display = (src==='fable')             ? 'flex':'none';
+  document.getElementById('manual-add').style.display   = (src==='all'||src==='mine') ? 'flex':'none';
   renderBooks();
 }
 
+// ═══════════════════════════════════════════════════
+// LIBRARY AVAILABILITY (manual toggle, persisted)
+// ═══════════════════════════════════════════════════
+// Key format: "avail-libby-NORMTITLE" / "avail-bb-NORMTITLE" → "yes" | "no" | "unknown"
+function availKey(service, title) {
+  return `avail-${service}-${normTitle(title).slice(0,40)}`;
+}
+function getAvail(service, title) {
+  return localStorage.getItem(availKey(service, title)) || 'unknown';
+}
+function setAvail(service, title, state) {
+  localStorage.setItem(availKey(service, title), state);
+  renderBooks(); // re-render to reflect change
+}
+function cycleAvail(service, title) {
+  const cur = getAvail(service, title);
+  // unknown → yes → no → unknown
+  const next = cur === 'unknown' ? 'yes' : cur === 'yes' ? 'no' : 'unknown';
+  setAvail(service, title, next);
+}
+function availBadgeHTML(service, title) {
+  const state = getAvail(service, title);
+  const labels = {
+    libby:     { name:'Libraries NI', icon:'📖' },
+    borrowbox: { name:'LIVE Borders', icon:'📗' },
+  };
+  const l = labels[service];
+  const stateLabel = state === 'yes' ? '✓ Available' : state === 'no' ? '✗ Not available' : '? Not checked';
+  const cls = state;
+  // clicking cycles through states
+  return `<button class="avail-badge ${cls}" onclick="cycleAvail('${service}','${title.replace(/'/g,"\\'")}');event.stopPropagation();" title="Click to update: ${l.name}">${l.icon} ${l.name}: ${stateLabel}</button>`;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER BOOKS (with library availability)
+// ═══════════════════════════════════════════════════
 function renderBooks() {
   const el = document.getElementById('tracked-list');
-
-  let books = [];
-  if (currentSource === 'all' || currentSource === 'gr')   books = books.concat(grBooks.map((b,i) => ({...b, _src:'gr', _idx:i})));
-  if (currentSource === 'all' || currentSource === 'mine') books = books.concat(manualBooks.map((b,i) => ({...b, _src:'manual', _idx:i})));
-
   if (currentSource === 'fable') {
-    el.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">📖</div>
-        <p>Fable doesn't have a public API yet.<br>Your shelves can only be viewed in the Fable app.</p>
-      </div>`;
+    el.innerHTML = `<div class="empty-state"><div class="icon">📖</div><p>Fable doesn't have a public API yet.<br>Your shelves can only be viewed in the Fable app.</p></div>`;
     return;
   }
 
+  let books = [];
+  if (currentSource === 'all' || currentSource === 'gr')
+    books = books.concat(grBooks.map((b,i) => ({...b, _src:'gr', _idx:i})));
+  if (currentSource === 'all' || currentSource === 'mine')
+    books = books.concat(manualBooks.map((b,i) => ({...b, _src:'manual', _idx:i})));
+
   if (!books.length) {
     const msgs = {
-      gr:   '<div class="icon">🌿</div><p>Syncing your Goodreads TBR…<br>Press Sync above if it doesn\'t appear.</p>',
-      mine: '<div class="icon">🔖</div><p>No books tracked yet.<br>Add one using the search above!</p>',
-      all:  '<div class="icon">📚</div><p>No books yet.<br>Sync Goodreads or add one manually!</p>',
+      gr:   '<div class="icon">🌿</div><p>Press Sync above to load your Goodreads TBR.</p>',
+      mine: '<div class="icon">🔖</div><p>No books tracked yet. Add one above!</p>',
+      all:  '<div class="icon">📚</div><p>Sync Goodreads or add a book manually above.</p>',
     };
-    el.innerHTML = `<div class="empty-state">${msgs[currentSource] || msgs.all}</div>`;
+    el.innerHTML = `<div class="empty-state">${msgs[currentSource]||msgs.all}</div>`;
     return;
   }
 
   el.innerHTML = '';
   books.forEach(book => {
-    const isGr     = book._src === 'gr';
-    const amzUrl   = `https://www.amazon.co.uk/s?k=${encodeURIComponent(book.title + ' kindle')}&i=digital-text`;
-    const erUrl    = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(book.title)}`;
+    const isGr    = book._src === 'gr';
+    const t       = book.title;
+    const amzUrl  = `https://www.amazon.co.uk/s?k=${encodeURIComponent(t+' kindle')}&i=digital-text`;
+    const erUrl   = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(t)}`;
+    const libbySrch = LIBBY_URL(t);
+    const bbSrch    = BORROWBOX_URL(t);
+
+    // 99p deal match
+    const matchingDeal = allDeals.find(d => titleMatch(t, d.info?.title || d.rawTitle));
+
+    // Availability states
+    const libbyState = getAvail('libby', t);
+    const bbState    = getAvail('borrowbox', t);
+    const eitherAvail = libbyState === 'yes' || bbState === 'yes';
 
     const card = document.createElement('div');
-    card.className = 'tracked-card' + (isGr ? ' gr-card' : '');
+    card.className = 'tracked-card' + (isGr ? ' gr-card' : '') + (eitherAvail ? ' avail-highlight' : '');
     card.innerHTML = `
       <div class="tracked-cover">${book.cover ? `<img src="${book.cover}" alt="">` : '📖'}</div>
       <div class="tracked-info">
-        <span class="source-pill ${isGr ? 'gr' : 'manual'}">${isGr ? '🌿 Goodreads TBR' : '🔖 Tracked'}</span>
-        <div class="tracked-title">${book.title}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;">
+          <span class="source-pill ${isGr ? 'gr':'manual'}">${isGr ? '🌿 Goodreads TBR':'🔖 Tracked'}</span>
+          ${eitherAvail ? `<span style="background:rgba(26,107,154,.15);color:#1a6b9a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;">📚 FREE TO BORROW</span>` : ''}
+        </div>
+        <div class="tracked-title">${t}</div>
         ${book.author ? `<div class="tracked-author">by ${book.author}</div>` : ''}
-        ${book.rating ? `<div style="color:var(--gold);font-size:12px;margin-bottom:6px;">${stars(book.rating)} ${book.rating}</div>` : ''}
-        <div class="tracked-actions">
+        ${book.rating ? `<div style="color:var(--gold);font-size:12px;margin-bottom:5px;">${starStr(book.rating)} ${book.rating}</div>` : ''}
+        ${matchingDeal ? `<div class="deal-match-chip">🎉 On sale today for £0.99!</div>` : ''}
+
+        <!-- Library availability check -->
+        <div class="library-check-box">
+          <div class="library-check-title">🏛️ Library availability — tap to update after checking</div>
+          <div class="library-check-row">
+            <a class="btn-check-lib libby" href="${libbySrch}" target="_blank" rel="noopener">🔍 Search Libraries NI</a>
+            ${availBadgeHTML('libby', t)}
+          </div>
+          <div class="library-check-row">
+            <a class="btn-check-lib borrowbox" href="${bbSrch}" target="_blank" rel="noopener">🔍 Search LIVE Borders</a>
+            ${availBadgeHTML('borrowbox', t)}
+          </div>
+        </div>
+
+        <div class="tracked-actions" style="margin-top:9px;">
           <a class="btn-sm amazon"  href="${amzUrl}" target="_blank">🛒 Amazon</a>
-          <a class="btn-sm ereader" href="${erUrl}"  target="_blank">📉 Track Price</a>
+          <a class="btn-sm ereader" href="${erUrl}"  target="_blank">📉 Track price</a>
           ${isGr && book.grLink ? `<a class="btn-sm gr" href="${book.grLink}" target="_blank">🌿 Goodreads</a>` : ''}
         </div>
-        ${book.description ? `<div class="book-snippet">${book.description.slice(0, 200)}${book.description.length > 200 ? '…' : ''}</div>` : ''}
+        ${book.description ? `<div class="book-snippet">${book.description.slice(0,190)}${book.description.length>190?'…':''}</div>` : ''}
       </div>
-      ${!isGr ? `<button class="remove-btn" onclick="removeBook('manual',${book._idx})" title="Remove">✕</button>` : ''}`;
+      ${!isGr ? `<button class="remove-btn" onclick="removeBook(${book._idx})" title="Remove">✕</button>` : ''}`;
     el.appendChild(card);
   });
 }
 
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════
 // INIT
-// ─────────────────────────────────────────────
-// Restore cached Goodreads books + show sync date
-if (grBooks.length && grLastSync) {
-  document.querySelector('.gr-banner-text').innerHTML =
-    `<strong>Goodreads TBR — ${grBooks.length} books</strong>Last synced: ${grLastSync}`;
-}
-
+// ═══════════════════════════════════════════════════
 loadDeals();
 renderBooks();
-
-// Auto-sync Goodreads on first load (or if cache is empty)
 if (!grBooks.length) loadGoodreads();
 </script>
 </body>
