@@ -4,610 +4,408 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>📚 Kindle Deal Tracker</title>
+<title>📚 My Reading Companion</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-/* ══════════════════════════════════════
-   THEME VARIABLES
-══════════════════════════════════════ */
 :root {
-  --burg:        #5C1B2E;
-  --burg-dark:   #3D0F1E;
-  --burg-mid:    #7A2340;
-  --gold:        #C5923C;
-  --gold-lt:     #E2B56A;
-  --forest:      #2A5240;
-  --forest-lt:   #3B7059;
-  --gr-green:    #3A8C5C;
-  --fable-blue:  #3B6BAF;
-
-  /* light */
-  --bg:          #FAF5E9;
-  --bg-card:     #FFFDF7;
-  --ink:         #180E08;
-  --muted:       #8A7060;
-  --border:      rgba(92,27,46,0.13);
-  --shadow:      0 3px 20px rgba(92,27,46,0.12);
-  --shadow-lg:   0 8px 36px rgba(92,27,46,0.18);
-  --row-hover:   rgba(92,27,46,0.04);
-  --row-sel:     rgba(92,27,46,0.08);
-  --snippet-bg:  #F5EDD6;
-  --toggle-bg:   rgba(255,255,255,0.15);
+  --burg:#5C1B2E; --burg-dark:#3D0F1E; --burg-mid:#7A2340;
+  --gold:#C5923C; --gold-lt:#E2B56A;
+  --forest:#2A5240; --forest-lt:#3B7059;
+  --libby:#1a6b9a; --bb:#2e7d4f;
+  --bg:#FAF5E9; --bg-card:#FFFDF7;
+  --ink:#180E08; --muted:#8A7060;
+  --border:rgba(92,27,46,0.13);
+  --shadow:0 3px 20px rgba(92,27,46,0.12);
+  --shadow-lg:0 8px 36px rgba(92,27,46,0.18);
+  --row-hover:rgba(92,27,46,0.04);
+  --snippet-bg:#F5EDD6;
+  --toggle-bg:rgba(255,255,255,0.15);
+  --reading-col:#2A5240;
+  --read-col:#8A7060;
 }
 [data-theme="dark"] {
-  --bg:          #150C10;
-  --bg-card:     #1E1118;
-  --ink:         #F0E8D8;
-  --muted:       #9E8A78;
-  --border:      rgba(197,146,60,0.15);
-  --shadow:      0 3px 20px rgba(0,0,0,0.4);
-  --shadow-lg:   0 8px 36px rgba(0,0,0,0.5);
-  --row-hover:   rgba(197,146,60,0.06);
-  --row-sel:     rgba(197,146,60,0.12);
-  --snippet-bg:  #2A1A22;
-  --toggle-bg:   rgba(0,0,0,0.2);
+  --bg:#150C10; --bg-card:#1E1118;
+  --ink:#F0E8D8; --muted:#9E8A78;
+  --border:rgba(197,146,60,0.15);
+  --shadow:0 3px 20px rgba(0,0,0,0.4);
+  --shadow-lg:0 8px 36px rgba(0,0,0,0.5);
+  --row-hover:rgba(197,146,60,0.06);
+  --snippet-bg:#2A1A22;
+  --toggle-bg:rgba(0,0,0,0.2);
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;min-height:100vh;transition:background .3s,color .3s;}
 
-/* ══════════════════════════════════════
-   RESET + BASE
-══════════════════════════════════════ */
-*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-html, body { height:100%; }
-body {
-  font-family:'Lora',Georgia,serif;
-  background:var(--bg); color:var(--ink);
-  display:flex; flex-direction:column; min-height:100vh;
-  transition:background .3s, color .3s;
-}
+/* HEADER */
+header{background:linear-gradient(150deg,var(--burg-dark) 0%,var(--burg) 55%,var(--burg-mid) 100%);color:#FAF5E9;padding:16px 20px 13px;position:relative;overflow:hidden;flex-shrink:0;}
+header::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(-45deg,transparent,transparent 28px,rgba(197,146,60,.05) 28px,rgba(197,146,60,.05) 29px);}
+.header-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.header-eyebrow{font-size:10px;letter-spacing:4px;color:var(--gold-lt);text-transform:uppercase;margin-bottom:3px;opacity:.85;}
+header h1{font-family:'Playfair Display',serif;font-size:clamp(18px,4vw,28px);font-weight:700;line-height:1.1;}
+header p{font-style:italic;font-size:12px;color:var(--gold-lt);margin-top:3px;opacity:.85;}
+.dark-toggle{background:var(--toggle-bg);border:1px solid rgba(255,255,255,.2);border-radius:50px;padding:6px 13px;color:#FAF5E9;font-family:'Lora',serif;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
+.dark-toggle:hover{background:rgba(255,255,255,.2);}
 
-/* ══════════════════════════════════════
-   HEADER
-══════════════════════════════════════ */
-header {
-  background:linear-gradient(150deg,var(--burg-dark) 0%,var(--burg) 55%,var(--burg-mid) 100%);
-  color:#FAF5E9; padding:18px 20px 14px;
-  position:relative; overflow:hidden; flex-shrink:0;
-}
-header::after {
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background:repeating-linear-gradient(-45deg,transparent,transparent 28px,
-    rgba(197,146,60,.05) 28px,rgba(197,146,60,.05) 29px);
-}
-.header-inner {
-  position:relative; z-index:1; max-width:1100px; margin:0 auto;
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-}
-.header-text {}
-.header-eyebrow { font-size:10px; letter-spacing:4px; color:var(--gold-lt); text-transform:uppercase; margin-bottom:3px; opacity:.85; }
-header h1 { font-family:'Playfair Display',serif; font-size:clamp(20px,4vw,30px); font-weight:700; line-height:1.1; }
-header p  { font-style:italic; font-size:12px; color:var(--gold-lt); margin-top:3px; opacity:.85; }
+/* NAV */
+nav{background:var(--burg);display:flex;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+nav button{flex:1;min-width:110px;padding:11px 14px;background:none;border:none;border-bottom:3px solid transparent;color:rgba(250,245,233,.5);font-family:'Lora',serif;font-size:13px;cursor:pointer;white-space:nowrap;transition:all .18s;}
+nav button.active{color:#FAF5E9;border-bottom-color:var(--gold);background:rgba(255,255,255,.06);}
+nav button:hover:not(.active){color:#FAF5E9;background:rgba(255,255,255,.04);}
 
-/* dark mode toggle */
-.dark-toggle {
-  background:var(--toggle-bg); border:1px solid rgba(255,255,255,.2);
-  border-radius:50px; padding:7px 14px; color:#FAF5E9;
-  font-family:'Lora',serif; font-size:12px; cursor:pointer;
-  white-space:nowrap; transition:all .2s; flex-shrink:0;
-}
-.dark-toggle:hover { background:rgba(255,255,255,.2); }
+/* MAIN */
+main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.tab{display:none;flex:1;overflow:hidden;}
+.tab.active{display:flex;flex-direction:column;}
+.section-head{padding:13px 16px 11px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.section-head h2{font-family:'Playfair Display',serif;font-size:19px;color:var(--burg);flex-shrink:0;}
+[data-theme="dark"] .section-head h2{color:var(--gold-lt);}
+.book-count{font-size:11px;color:var(--muted);font-style:italic;margin-left:auto;}
 
-/* ══════════════════════════════════════
-   NAV
-══════════════════════════════════════ */
-nav {
-  background:var(--burg); display:flex; flex-shrink:0;
-  overflow-x:auto; -webkit-overflow-scrolling:touch;
-}
-nav button {
-  flex:1; min-width:110px; padding:11px 14px;
-  background:none; border:none; border-bottom:3px solid transparent;
-  color:rgba(250,245,233,.5); font-family:'Lora',serif; font-size:13px;
-  cursor:pointer; white-space:nowrap; transition:all .18s;
-}
-nav button.active { color:#FAF5E9; border-bottom-color:var(--gold); background:rgba(255,255,255,.06); }
-nav button:hover:not(.active) { color:#FAF5E9; background:rgba(255,255,255,.04); }
+/* SEARCH + FILTERS */
+.controls{flex-shrink:0;padding:10px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+.search-row{display:flex;gap:8px;}
+.search-input{flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:9px;font-family:'Lora',serif;font-size:13px;background:var(--bg-card);color:var(--ink);outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--burg);}
+.btn-add-book{background:var(--burg);color:#FAF5E9;border:none;padding:9px 15px;border-radius:9px;font-family:'Lora',serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;}
+.btn-add-book:hover{background:var(--burg-dark);}
+.filter-chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.filter-chips::-webkit-scrollbar{display:none;}
+.chip{flex-shrink:0;padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--muted);font-family:'Lora',serif;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .18s;}
+.chip.active{background:var(--burg);color:#FAF5E9;border-color:var(--burg);}
+.chip.active.reading-chip{background:var(--forest);}
+.chip.active.read-chip{background:var(--muted);}
+.chip.active.free-chip{background:var(--libby);}
+.chip:hover:not(.active){border-color:var(--gold);color:var(--ink);}
 
-/* ══════════════════════════════════════
-   MAIN LAYOUT
-══════════════════════════════════════ */
-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.tab { display:none; flex:1; overflow:hidden; }
-.tab.active { display:flex; flex-direction:column; }
+/* BOOK LIST */
+.book-list-wrap{flex:1;overflow-y:auto;padding:12px 14px;}
 
-.section-head { padding:14px 18px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.section-head h2 { font-family:'Playfair Display',serif; font-size:20px; color:var(--burg); }
-[data-theme="dark"] .section-head h2 { color:var(--gold-lt); }
-.section-head p  { font-size:12px; color:var(--muted); font-style:italic; margin-top:2px; }
+/* BOOK CARD */
+.book-card{background:var(--bg-card);border-radius:12px;padding:13px;margin-bottom:12px;box-shadow:var(--shadow);border-left:4px solid var(--gold);display:flex;gap:13px;align-items:flex-start;transition:opacity .2s,border-color .2s;}
+.book-card.reading{border-left-color:var(--forest);}
+.book-card.read{border-left-color:var(--muted);opacity:.65;}
+.book-card.free-borrow{border-left-color:var(--libby);box-shadow:0 3px 20px rgba(26,107,154,.16);}
+.book-cover{width:52px;min-width:52px;height:76px;border-radius:4px;background:var(--snippet-bg);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted);overflow:hidden;box-shadow:2px 3px 10px rgba(0,0,0,.15);}
+.book-cover img{width:100%;height:100%;object-fit:cover;border-radius:4px;}
+.book-body{flex:1;min-width:0;}
 
-/* ══════════════════════════════════════
-   DEALS TAB
-══════════════════════════════════════ */
-.deals-outer { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+/* top row: badges */
+.badge-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:4px;}
+.pill{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:.3px;white-space:nowrap;}
+.pill.tbr{background:rgba(197,146,60,.15);color:var(--gold);}
+.pill.reading{background:rgba(42,82,64,.18);color:var(--forest);}
+.pill.read{background:rgba(138,112,96,.15);color:var(--muted);}
+.pill.free{background:rgba(26,107,154,.15);color:var(--libby);}
+[data-theme="dark"] .pill.reading{color:#6FCE94;}
+[data-theme="dark"] .pill.free{color:#7BB8D8;}
 
-/* hero card */
-.hero-wrap { flex-shrink:0; padding:14px 16px 0; }
-.hero-card {
-  background:linear-gradient(135deg,var(--burg-dark),var(--burg-mid));
-  border-radius:14px; padding:16px 18px; display:flex; gap:16px;
-  align-items:center; box-shadow:var(--shadow-lg); cursor:pointer;
-  transition:transform .2s; position:relative; overflow:hidden; margin-bottom:12px;
-}
-.hero-card::before {
-  content:'✦ DEAL OF THE DAY ✦';
-  position:absolute; top:8px; right:12px;
-  font-size:9px; letter-spacing:3px; color:var(--gold-lt); opacity:.7;
-}
-.hero-card:hover { transform:translateY(-2px); }
-.hero-cover {
-  width:70px; min-width:70px; height:100px; border-radius:5px;
-  overflow:hidden; box-shadow:3px 4px 14px rgba(0,0,0,.4);
-  background:rgba(255,255,255,.1); display:flex; align-items:center;
-  justify-content:center; font-size:28px; color:rgba(255,255,255,.4);
-}
-.hero-cover img { width:100%; height:100%; object-fit:cover; border-radius:5px; }
-.hero-info { flex:1; color:#FAF5E9; }
-.hero-label { font-size:10px; letter-spacing:2px; color:var(--gold-lt); text-transform:uppercase; margin-bottom:4px; }
-.hero-title  { font-family:'Playfair Display',serif; font-size:clamp(14px,2.5vw,19px); font-weight:700; line-height:1.25; margin-bottom:4px; }
-.hero-author { font-size:12px; font-style:italic; opacity:.75; margin-bottom:8px; }
-.hero-price  { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--gold-lt); }
-.hero-was    { font-size:12px; text-decoration:line-through; opacity:.55; margin-left:8px; }
-.hero-badge  { background:var(--gold); color:#111; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:8px; }
+.book-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--ink);line-height:1.25;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.book-author{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:5px;}
+.gr-rating{font-size:11px;color:var(--gold);margin-bottom:7px;}
 
-/* genre filter bar */
-.filter-bar {
-  flex-shrink:0; padding:10px 14px 0;
-  display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
-.filter-bar::-webkit-scrollbar { display:none; }
-.filter-chip {
-  flex-shrink:0; padding:5px 13px; border-radius:20px;
-  border:1.5px solid var(--border); background:var(--bg-card);
-  color:var(--muted); font-family:'Lora',serif; font-size:12px;
-  cursor:pointer; white-space:nowrap; transition:all .18s;
-}
-.filter-chip.active { background:var(--burg); color:#FAF5E9; border-color:var(--burg); }
-.filter-chip:hover:not(.active) { border-color:var(--gold); color:var(--ink); }
-[data-theme="dark"] .filter-chip:hover:not(.active) { color:var(--ink); }
+/* STATUS TOGGLE */
+.status-toggle{display:inline-flex;border-radius:7px;overflow:hidden;border:1.5px solid var(--border);margin-bottom:9px;}
+.status-btn{padding:4px 10px;background:none;border:none;font-family:'Lora',serif;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;border-right:1px solid var(--border);}
+.status-btn:last-child{border-right:none;}
+.status-btn.active.tbr-btn{background:rgba(197,146,60,.2);color:var(--gold);font-weight:700;}
+.status-btn.active.reading-btn{background:rgba(42,82,64,.2);color:var(--forest);font-weight:700;}
+.status-btn.active.read-btn{background:rgba(138,112,96,.2);color:var(--muted);font-weight:700;}
+.status-btn:hover:not(.active){background:var(--row-hover);}
 
-/* split layout */
-.deals-body { flex:1; display:flex; overflow:hidden; }
-.deals-list { width:290px; min-width:180px; overflow-y:auto; border-right:1px solid var(--border); flex-shrink:0; }
+/* LIBRARY CHECK */
+.lib-box{background:linear-gradient(135deg,rgba(26,107,154,.06),rgba(46,125,79,.06));border:1px solid rgba(26,107,154,.16);border-radius:9px;padding:9px 11px;margin-bottom:9px;}
+.lib-box-title{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.lib-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;}
+.lib-row:last-child{margin-bottom:0;}
+.lib-name{font-size:11px;font-weight:700;color:var(--ink);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fmt-btn{padding:3px 8px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg-card);font-family:'Lora',serif;font-size:10px;cursor:pointer;transition:all .15s;white-space:nowrap;color:var(--muted);}
+.fmt-btn.yes{background:rgba(42,82,64,.2);border-color:var(--forest);color:var(--forest);font-weight:700;}
+.fmt-btn.no{background:rgba(92,27,46,.1);border-color:var(--burg);color:var(--burg);font-weight:700;}
+[data-theme="dark"] .fmt-btn.yes{color:#6FCE94;border-color:#6FCE94;}
+[data-theme="dark"] .fmt-btn.no{color:#E08090;border-color:#E08090;}
+.fmt-btn:hover{border-color:var(--gold);}
+.lib-search{font-size:11px;color:var(--libby);font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0;padding:3px 8px;border-radius:6px;border:1px solid rgba(26,107,154,.25);transition:all .15s;}
+.lib-search:hover{background:rgba(26,107,154,.1);}
 
-.deal-row {
-  display:flex; gap:10px; align-items:center;
-  padding:11px 13px; border-bottom:1px solid var(--border);
-  cursor:pointer; transition:background .15s; border-left:3px solid transparent;
-}
-.deal-row:hover { background:var(--row-hover); }
-.deal-row.sel   { background:var(--row-sel); border-left-color:var(--gold); }
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:6px;flex-wrap:wrap;}
+.btn-sm{font-size:11px;padding:5px 10px;border-radius:7px;border:none;font-family:'Lora',serif;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block;}
+.btn-sm.amazon{background:#FF9900;color:#111;}
+.btn-sm.ereader{background:var(--forest);color:white;}
+.btn-sm.ninety-nine{background:var(--burg);color:#FAF5E9;}
+.btn-sm.del{background:none;border:1px solid var(--border);color:var(--muted);}
+.btn-sm:hover{opacity:.85;transform:translateY(-1px);}
 
-/* TBR match glow */
-.deal-row.tbr-match { border-left-color:var(--gr-green); }
-.deal-row.tbr-match .deal-thumb { box-shadow:0 0 0 2px var(--gr-green), 1px 2px 6px rgba(0,0,0,.18); }
-.tbr-badge {
-  display:inline-block; background:var(--gr-green); color:white;
-  font-size:9px; font-weight:700; padding:1px 6px; border-radius:10px;
-  letter-spacing:.3px; margin-top:3px;
-}
+/* ADD BOOK MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--bg-card);border-radius:14px;padding:24px;max-width:400px;width:100%;box-shadow:var(--shadow-lg);}
+.modal-box h3{font-family:'Playfair Display',serif;font-size:18px;color:var(--burg);margin-bottom:14px;}
+[data-theme="dark"] .modal-box h3{color:var(--gold-lt);}
+.modal-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-family:'Lora',serif;font-size:14px;background:var(--bg);color:var(--ink);outline:none;transition:border-color .2s;margin-bottom:12px;}
+.modal-input:focus{border-color:var(--burg);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.btn-cancel{background:none;border:1.5px solid var(--border);color:var(--muted);padding:9px 16px;border-radius:8px;font-family:'Lora',serif;font-size:13px;cursor:pointer;}
+.btn-confirm{background:var(--burg);color:#FAF5E9;border:none;padding:9px 18px;border-radius:8px;font-family:'Lora',serif;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-status{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:8px;min-height:18px;}
 
-.deal-thumb {
-  width:40px; min-width:40px; height:58px; border-radius:3px;
-  background:var(--snippet-bg); display:flex; align-items:center; justify-content:center;
-  font-size:15px; color:var(--muted); overflow:hidden;
-  box-shadow:1px 2px 6px rgba(0,0,0,.18); flex-shrink:0;
-}
-.deal-thumb img { width:100%; height:100%; object-fit:cover; border-radius:3px; }
-.deal-row-info { flex:1; min-width:0; }
-.deal-row-title  { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:var(--ink); line-height:1.25; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
-.deal-row-author { font-size:11px; color:var(--muted); font-style:italic; margin-top:2px; }
-.deal-row-price  { font-size:12px; color:var(--forest); font-weight:700; margin-top:3px; }
-[data-theme="dark"] .deal-row-price { color:#6FC99A; }
+/* LINKS TAB */
+.links-body{flex:1;overflow-y:auto;padding:16px;}
+.links-intro{font-size:13px;color:var(--muted);font-style:italic;margin-bottom:18px;line-height:1.6;padding:12px 14px;background:linear-gradient(135deg,rgba(197,146,60,.07),rgba(92,27,46,.04));border-radius:10px;border-left:3px solid var(--gold);}
+.links-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+@media(max-width:480px){.links-grid{grid-template-columns:1fr;}}
+.link-tile{background:var(--bg-card);border-radius:14px;padding:20px 16px;box-shadow:var(--shadow);text-align:center;text-decoration:none;color:inherit;transition:transform .2s,box-shadow .2s;display:block;}
+.link-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.link-tile .tile-icon{font-size:32px;margin-bottom:8px;}
+.link-tile h3{font-family:'Playfair Display',serif;font-size:15px;margin-bottom:5px;}
+.link-tile p{font-size:11px;color:var(--muted);font-style:italic;line-height:1.5;margin-bottom:12px;}
+.tile-btn{display:inline-block;padding:8px 16px;border-radius:8px;font-family:'Lora',serif;font-size:12px;font-weight:600;transition:all .2s;}
+.tile-btn:hover{opacity:.85;}
 
-/* detail pane */
-.deal-detail { flex:1; overflow-y:auto; padding:20px 18px; display:flex; flex-direction:column; }
-.detail-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); font-style:italic; font-size:14px; gap:12px; text-align:center; }
-.detail-empty .big { font-size:48px; }
+/* EMPTY */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;color:var(--muted);gap:10px;text-align:center;}
+.empty-state .icon{font-size:44px;}
+.empty-state p{font-style:italic;font-size:14px;line-height:1.6;}
 
-.detail-book { display:flex; gap:18px; margin-bottom:18px; }
-.detail-cover { width:105px; min-width:105px; height:154px; border-radius:6px; overflow:hidden; box-shadow:4px 6px 20px rgba(0,0,0,.25); background:var(--snippet-bg); display:flex; align-items:center; justify-content:center; font-size:34px; color:var(--muted); flex-shrink:0; }
-.detail-cover img { width:100%; height:100%; object-fit:cover; }
-.detail-meta { flex:1; }
-.detail-title  { font-family:'Playfair Display',serif; font-size:clamp(15px,2.5vw,20px); font-weight:700; line-height:1.25; color:var(--ink); margin-bottom:5px; }
-.detail-author { font-size:13px; color:var(--muted); font-style:italic; margin-bottom:10px; }
-.price-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
-.price-now { font-family:'Playfair Display',serif; font-size:22px; color:var(--forest); font-weight:700; }
-[data-theme="dark"] .price-now { color:#6FC99A; }
-.price-was { font-size:13px; color:var(--muted); text-decoration:line-through; }
-.badge { background:var(--burg); color:#FAF5E9; font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; }
-.stars-row { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
-.stars { color:var(--gold); font-size:15px; letter-spacing:2px; }
-.stars-count { font-size:12px; color:var(--muted); }
-.detail-cats { font-size:11px; color:var(--muted); font-style:italic; margin-bottom:12px; }
-
-/* TBR match banner in detail */
-.tbr-match-banner {
-  background:linear-gradient(135deg,rgba(58,140,92,.15),rgba(58,140,92,.07));
-  border:1px solid rgba(58,140,92,.3); border-radius:9px;
-  padding:10px 14px; margin-bottom:14px; display:flex; align-items:center; gap:10px;
-  font-size:13px; color:var(--gr-green); font-weight:600;
-}
-
-.detail-desc { font-size:13px; line-height:1.8; color:var(--ink); margin-bottom:16px; border-left:3px solid var(--gold); padding-left:14px; font-style:italic; opacity:.85; }
-.btn-amazon  { display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#FF9900,#E88800); color:#111; border:none; padding:13px 20px; border-radius:10px; font-family:'Lora',serif; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; width:100%; max-width:360px; box-shadow:0 4px 14px rgba(255,153,0,.3); transition:all .2s; }
-.btn-amazon:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(255,153,0,.4); }
-.btn-ereader { display:flex; align-items:center; justify-content:center; gap:8px; background:var(--forest); color:white; border:none; padding:11px 20px; border-radius:10px; font-family:'Lora',serif; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; width:100%; max-width:360px; margin-top:9px; transition:all .2s; }
-.btn-ereader:hover { background:var(--forest-lt); transform:translateY(-2px); }
-
-/* ══════════════════════════════════════
-   MY BOOKS TAB
-══════════════════════════════════════ */
-.tracked-body { flex:1; overflow-y:auto; padding:16px; }
-.source-toggle { display:flex; margin-bottom:16px; border-radius:10px; overflow:hidden; border:1.5px solid var(--border); }
-.source-btn { flex:1; padding:9px 10px; background:var(--bg-card); border:none; border-right:1px solid var(--border); font-family:'Lora',serif; font-size:12px; color:var(--muted); cursor:pointer; transition:all .18s; white-space:nowrap; }
-.source-btn:last-child { border-right:none; }
-.source-btn.active { background:var(--burg); color:#FAF5E9; font-weight:600; }
-.source-btn:hover:not(.active) { background:var(--row-hover); color:var(--ink); }
-
-.add-row { display:flex; gap:9px; margin-bottom:18px; }
-.add-input { flex:1; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; font-family:'Lora',serif; font-size:14px; background:var(--bg-card); color:var(--ink); outline:none; transition:border-color .2s; }
-.add-input:focus { border-color:var(--burg); }
-.btn-add { background:var(--burg); color:#FAF5E9; border:none; padding:11px 15px; border-radius:9px; font-family:'Lora',serif; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; }
-.btn-add:hover { background:var(--burg-dark); }
-
-.gr-banner { background:linear-gradient(135deg,rgba(58,140,92,.1),rgba(58,140,92,.04)); border:1px solid rgba(58,140,92,.22); border-radius:10px; padding:11px 13px; margin-bottom:14px; display:flex; align-items:center; gap:11px; }
-.gr-banner-text { flex:1; font-size:12px; color:var(--muted); line-height:1.5; }
-.gr-banner-text strong { color:var(--gr-green); font-size:13px; display:block; margin-bottom:2px; }
-.gr-sync-btn { background:var(--gr-green); color:white; border:none; padding:7px 12px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; flex-shrink:0; }
-.gr-sync-btn:hover { opacity:.85; }
-.gr-sync-btn:disabled { opacity:.5; cursor:default; }
-
-.fable-banner { background:linear-gradient(135deg,rgba(59,107,175,.1),rgba(59,107,175,.04)); border:1px solid rgba(59,107,175,.2); border-radius:10px; padding:11px 13px; margin-bottom:14px; display:flex; align-items:center; gap:11px; }
-.fable-banner-text { flex:1; font-size:12px; color:var(--muted); line-height:1.5; }
-.fable-banner-text strong { color:var(--fable-blue); font-size:13px; display:block; margin-bottom:2px; }
-.btn-fable { background:var(--fable-blue); color:white; border:none; padding:7px 12px; border-radius:7px; font-family:'Lora',serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .2s; text-decoration:none; display:inline-block; flex-shrink:0; }
-.btn-fable:hover { opacity:.85; }
-
-.source-pill { display:inline-block; font-size:9px; font-weight:700; padding:2px 7px; border-radius:20px; letter-spacing:.3px; margin-bottom:4px; }
-.source-pill.gr     { background:rgba(58,140,92,.15);  color:var(--gr-green); }
-.source-pill.manual { background:rgba(92,27,46,.1);    color:var(--burg); }
-
-.tracked-card { background:var(--bg-card); border-radius:12px; padding:13px; margin-bottom:13px; box-shadow:var(--shadow); border-left:3px solid var(--gold); display:flex; gap:13px; align-items:flex-start; animation:slideIn .25s ease; }
-.tracked-card.gr-card { border-left-color:var(--gr-green); }
-.tracked-card.avail-highlight { border-left-color:#1a6b9a; box-shadow:0 3px 20px rgba(26,107,154,.18); }
-@keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:none; } }
-.tracked-cover { width:54px; min-width:54px; height:78px; border-radius:4px; background:var(--snippet-bg); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--muted); overflow:hidden; box-shadow:2px 3px 10px rgba(0,0,0,.15); }
-.tracked-cover img { width:100%; height:100%; object-fit:cover; border-radius:4px; }
-.tracked-info { flex:1; min-width:0; }
-.tracked-title  { font-family:'Playfair Display',serif; font-size:14px; font-weight:700; color:var(--ink); margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.tracked-author { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:7px; }
-.tracked-actions { display:flex; gap:7px; flex-wrap:wrap; }
-.btn-sm { font-size:12px; padding:5px 10px; border-radius:7px; border:none; font-family:'Lora',serif; font-weight:600; cursor:pointer; transition:all .15s; text-decoration:none; display:inline-block; }
-.btn-sm.amazon    { background:#FF9900; color:#111; }
-.btn-sm.ereader   { background:var(--forest); color:white; }
-.btn-sm.gr        { background:var(--gr-green); color:white; }
-.btn-sm.libby     { background:#1a6b9a; color:white; }
-.btn-sm.borrowbox { background:#2e7d4f; color:white; }
-.btn-sm:hover { opacity:.85; transform:translateY(-1px); }
-
-/* ── Library availability section ── */
-.library-check-box {
-  margin-top:10px; padding:10px 12px;
-  background:linear-gradient(135deg,rgba(26,107,154,.07),rgba(46,125,79,.07));
-  border:1px solid rgba(26,107,154,.18); border-radius:9px;
-}
-.library-check-title {
-  font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
-  color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:5px;
-}
-.library-check-row {
-  display:flex; align-items:center; gap:8px; margin-bottom:6px;
-  flex-wrap:wrap;
-}
-.library-check-row:last-child { margin-bottom:0; }
-.btn-check-lib {
-  font-size:12px; padding:5px 11px; border-radius:7px; border:none;
-  font-family:'Lora',serif; font-weight:600; cursor:pointer;
-  transition:all .15s; text-decoration:none; display:inline-block; flex-shrink:0;
-}
-.btn-check-lib.libby     { background:#1a6b9a; color:white; }
-.btn-check-lib.borrowbox { background:#2e7d4f; color:white; }
-.btn-check-lib:hover { opacity:.85; transform:translateY(-1px); }
-
-/* availability badge */
-.avail-badge {
-  display:inline-flex; align-items:center; gap:4px;
-  font-size:11px; font-weight:700; padding:4px 9px; border-radius:20px;
-  cursor:pointer; border:none; font-family:'Lora',serif; transition:all .2s;
-  flex-shrink:0;
-}
-.avail-badge.unknown  { background:rgba(138,112,96,.1); color:var(--muted); }
-.avail-badge.yes      { background:rgba(46,125,79,.18); color:#1a6b3a; }
-.avail-badge.no       { background:rgba(92,27,46,.1);   color:var(--burg); }
-[data-theme="dark"] .avail-badge.yes { background:rgba(46,125,79,.3); color:#6FCE94; }
-[data-theme="dark"] .avail-badge.no  { background:rgba(92,27,46,.3); color:#E08090; }
-.avail-badge:hover { opacity:.8; }
-
-/* library row — remove old style, replaced above */
-.library-row { display:none; }
-
-/* detail pane library buttons */
-.btn-library {
-  display:flex; align-items:center; justify-content:center; gap:7px;
-  border:none; padding:11px 20px; border-radius:10px;
-  font-family:'Lora',serif; font-size:14px; font-weight:600;
-  cursor:pointer; text-decoration:none; width:100%; max-width:380px;
-  margin-top:9px; transition:all .2s;
-}
-.btn-library.libby     { background:#1a6b9a; color:white; }
-.btn-library.borrowbox { background:#2e7d4f; color:white; }
-.btn-library:hover { opacity:.88; transform:translateY(-2px); }
-.remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; padding:4px; border-radius:50%; transition:color .2s; line-height:1; margin-left:auto; align-self:flex-start; }
-.remove-btn:hover { color:var(--burg); }
-.book-snippet { margin-top:8px; padding:8px 10px; background:var(--snippet-bg); border-radius:7px; font-size:12px; line-height:1.65; color:var(--muted); font-style:italic; }
-
-/* deal match chip on tracked card */
-.deal-match-chip { display:inline-flex; align-items:center; gap:4px; background:rgba(255,153,0,.15); color:#B86A00; font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; margin-top:5px; }
-[data-theme="dark"] .deal-match-chip { background:rgba(255,153,0,.2); color:var(--gold-lt); }
-
-/* ══════════════════════════════════════
-   DROPS TAB
-══════════════════════════════════════ */
-.drops-body { flex:1; overflow-y:auto; padding:16px; }
-.drops-tiles { display:grid; grid-template-columns:1fr 1fr; gap:13px; }
-@media(max-width:500px) { .drops-tiles { grid-template-columns:1fr; } }
-.drop-tile { background:var(--bg-card); border-radius:12px; padding:17px 15px; box-shadow:var(--shadow); text-align:center; }
-.drop-tile h3 { font-family:'Playfair Display',serif; font-size:15px; margin-bottom:5px; }
-.drop-tile p  { font-size:12px; color:var(--muted); font-style:italic; margin-bottom:13px; line-height:1.55; }
-.btn-tile { display:inline-block; padding:9px 16px; border-radius:8px; font-family:'Lora',serif; font-size:13px; font-weight:600; text-decoration:none; transition:all .2s; border:none; cursor:pointer; }
-.btn-tile.burg   { background:var(--burg);   color:#FAF5E9; }
-.btn-tile.forest { background:var(--forest); color:white; }
-.btn-tile.amber  { background:var(--gold);   color:var(--ink); }
-.btn-tile:hover  { transform:translateY(-2px); opacity:.9; }
-
-/* ══════════════════════════════════════
-   LOADING / EMPTY / UTILITY
-══════════════════════════════════════ */
-.loading { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px; color:var(--muted); gap:12px; }
-.spinner { width:30px; height:30px; border:3px solid rgba(92,27,46,.15); border-top-color:var(--burg); border-radius:50%; animation:spin .8s linear infinite; }
-[data-theme="dark"] .spinner { border-color:rgba(197,146,60,.15); border-top-color:var(--gold); }
-@keyframes spin { to { transform:rotate(360deg); } }
-.loading p { font-style:italic; font-size:13px; }
-.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 20px; color:var(--muted); gap:10px; text-align:center; }
-.empty-state .icon { font-size:42px; }
-.empty-state p { font-style:italic; font-size:14px; line-height:1.6; }
-
-/* ══════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════ */
-@media(max-width:560px) {
-  .deals-list { width:145px; min-width:120px; }
-  .detail-cover { width:78px; min-width:78px; height:112px; }
-  .hero-cover { width:56px; min-width:56px; height:82px; }
-}
-@media(max-width:380px) {
-  .deals-list { width:120px; min-width:100px; }
-}
-
-footer { text-align:center; padding:14px; font-size:11px; color:var(--muted); font-style:italic; border-top:1px solid var(--border); flex-shrink:0; }
+footer{text-align:center;padding:12px;font-size:11px;color:var(--muted);font-style:italic;border-top:1px solid var(--border);flex-shrink:0;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="header-text">
+    <div>
       <div class="header-eyebrow">✦ Your Literary Companion ✦</div>
-      <h1>📚 Kindle Deal Tracker</h1>
-      <p>99p deals · Goodreads TBR · price drop alerts</p>
+      <h1>📚 My Reading Companion</h1>
+      <p>TBR · Libraries · One-stop reading hub</p>
     </div>
     <button class="dark-toggle" onclick="toggleDark()" id="dark-btn">🌙 Dark</button>
   </div>
 </header>
 
 <nav>
-  <button class="active" onclick="showTab('deals',this)">🔥 99p Deals</button>
-  <button onclick="showTab('tracked',this)">📚 My Books</button>
-  <button onclick="showTab('drops',this)">📉 Price Drops</button>
+  <button class="active" onclick="showTab('books',this)">📚 My TBR</button>
+  <button onclick="showTab('links',this)">🔗 My Links</button>
 </nav>
 
 <main>
 
-  <!-- ══ DEALS ══ -->
-  <div id="tab-deals" class="tab active">
-    <div class="section-head">
-      <h2>Today's 99p Kindle Deals</h2>
-      <p>99p books from eReaderIQ · click a deal for full details · hits refresh if empty</p>
-    </div>
-    <div class="deals-outer">
-      <!-- hero -->
-      <div class="hero-wrap" id="hero-wrap" style="display:none;">
-        <div class="hero-card" id="hero-card" onclick="heroClick()">
-          <div class="hero-cover" id="hero-cover">📖</div>
-          <div class="hero-info">
-            <div class="hero-label">⭐ Featured Deal</div>
-            <div class="hero-title"  id="hero-title">Loading…</div>
-            <div class="hero-author" id="hero-author"></div>
-            <div style="display:flex;align-items:baseline;gap:0;">
-              <span class="hero-price" id="hero-price"></span>
-              <span class="hero-was"   id="hero-was"></span>
-              <span class="hero-badge" id="hero-badge" style="display:none;"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- persistent status / retry bar -->
-      <div id="deals-status-bar" style="display:none; flex-shrink:0; padding:8px 14px; background:rgba(92,27,46,.07); border-bottom:1px solid var(--border); display:none; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-        <span id="deals-status-msg" style="font-size:12px; color:var(--muted); font-style:italic;"></span>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button onclick="loadDeals()" style="background:var(--burg);color:#FAF5E9;border:none;padding:6px 14px;border-radius:7px;font-family:'Lora',serif;font-size:12px;font-weight:600;cursor:pointer;">↻ Retry</button>
-          <a href="https://uk.ereaderiq.com/deals" target="_blank" style="font-size:12px;color:var(--burg);font-weight:600;text-decoration:none;">Open eReaderIQ →</a>
-          <a href="https://www.amazon.co.uk/b?node=341677031" target="_blank" style="font-size:12px;color:var(--forest);font-weight:600;text-decoration:none;">Amazon Deals →</a>
-        </div>
-      </div>
-
-      <!-- genre filter -->
-      <div class="filter-bar" id="filter-bar" style="padding-bottom:8px;">
-        <button class="filter-chip active" data-genre="all" onclick="filterGenre('all',this)">📚 All</button>
-      </div>
-
-      <!-- split -->
-      <div class="deals-body">
-        <div class="deals-list" id="deals-list">
-          <div class="loading"><div class="spinner"></div><p>Loading 99p deals…</p></div>
-        </div>
-        <div class="deal-detail" id="deal-detail">
-          <div class="detail-empty">
-            <div class="big">📖</div>
-            <p>Select a deal on the left<br>to see full details here</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ MY BOOKS ══ -->
-  <div id="tab-tracked" class="tab">
+  <!-- MY TBR TAB -->
+  <div id="tab-books" class="tab active">
     <div class="section-head">
       <h2>My Books</h2>
-      <p>Goodreads TBR + manually tracked — with deal alerts</p>
+      <span class="book-count" id="book-count"></span>
     </div>
-    <div class="tracked-body">
-      <div class="source-toggle">
-        <button class="source-btn active" onclick="switchSource('all',this)">📚 All</button>
-        <button class="source-btn"        onclick="switchSource('gr',this)">🌿 Goodreads</button>
-        <button class="source-btn"        onclick="switchSource('mine',this)">🔖 Mine</button>
-        <button class="source-btn"        onclick="switchSource('fable',this)">📖 Fable</button>
+    <div class="controls">
+      <div class="search-row">
+        <input id="search-input" class="search-input" placeholder="🔍 Search title or author…" oninput="renderBooks()">
+        <button class="btn-add-book" onclick="openAddModal()">+ Add Book</button>
       </div>
-
-      <div class="gr-banner" id="gr-banner">
-        <div style="font-size:22px;">🌿</div>
-        <div class="gr-banner-text">
-          <strong id="gr-banner-title">Goodreads TBR</strong>
-          <span id="gr-banner-sub">Tap Sync to load your Want to Read shelf</span>
-        </div>
-        <button class="gr-sync-btn" id="gr-sync-btn" onclick="loadGoodreads()">↻ Sync</button>
+      <div class="filter-chips">
+        <button class="chip active" onclick="setFilter('all',this)">📚 All</button>
+        <button class="chip reading-chip" onclick="setFilter('reading',this)">📖 Reading</button>
+        <button class="chip" onclick="setFilter('tbr',this)">🔖 To Read</button>
+        <button class="chip read-chip" onclick="setFilter('read',this)">✓ Read</button>
+        <button class="chip free-chip" onclick="setFilter('free',this)">🏛️ Free to Borrow</button>
       </div>
-
-      <div id="fable-banner" class="fable-banner" style="display:none;">
-        <div style="font-size:22px;">📖</div>
-        <div class="fable-banner-text">
-          <strong>Fable — no public API yet</strong>
-          Open Fable to view your shelves. We'll add it the moment they release an API!
-        </div>
-        <a class="btn-fable" href="https://fable.co" target="_blank">Open Fable →</a>
-      </div>
-
-      <div id="manual-add" class="add-row">
-        <input id="track-input" class="add-input" placeholder="Add a book manually — title or author…"
-               onkeypress="if(event.key==='Enter')addTracked()">
-        <button class="btn-add" onclick="addTracked()">+ Add</button>
-      </div>
-
-      <div id="tracked-list"></div>
     </div>
+    <div class="book-list-wrap" id="book-list"></div>
   </div>
 
-  <!-- ══ DROPS ══ -->
-  <div id="tab-drops" class="tab">
+  <!-- MY LINKS TAB -->
+  <div id="tab-links" class="tab">
     <div class="section-head">
-      <h2>Price Drop Alerts</h2>
-      <p>Set target prices and get notified when they drop</p>
+      <h2>My Reading Links</h2>
     </div>
-    <div class="drops-body">
-      <div class="drops-tiles">
-        <div class="drop-tile" style="border-top:4px solid var(--forest);">
-          <h3 style="color:var(--forest);">📉 eReaderIQ</h3>
-          <p>Best Kindle tracker. Set a target price, get emailed when it drops.</p>
-          <a class="btn-tile forest" href="https://uk.ereaderiq.com/track/drops#login" target="_blank">Open Dashboard →</a>
-        </div>
-        <div class="drop-tile" style="border-top:4px solid var(--gold);">
-          <h3 style="color:var(--gold);">🐪 CamelCamelCamel</h3>
-          <p>Full Amazon price history. See the lowest a book has ever been.</p>
-          <a class="btn-tile amber" href="https://uk.camelcamelcamel.com" target="_blank">View History →</a>
-        </div>
-        <div class="drop-tile" style="border-top:4px solid var(--burg);">
-          <h3 style="color:var(--burg);">🔔 Set an Alert</h3>
-          <p>Paste any Amazon book URL into eReaderIQ to track its price.</p>
-          <a class="btn-tile burg" href="https://uk.ereaderiq.com/search/books/" target="_blank">Search Books →</a>
-        </div>
-        <div class="drop-tile" style="border-top:4px solid var(--muted);">
-          <h3>📬 Daily Email</h3>
-          <p>eReaderIQ emails you when any tracked book hits your target price.</p>
-          <a class="btn-tile forest" href="https://uk.ereaderiq.com/account/settings/" target="_blank">Email Settings →</a>
-        </div>
+    <div class="links-body">
+      <p class="links-intro">✦ &nbsp; Your one-stop reading hub — every app and service you use, all in one place &nbsp; ✦</p>
+      <div class="links-grid">
+
+        <a class="link-tile" href="https://www.amazon.co.uk/kindle-dbs/storefront?storeType=browse&node=341677031" target="_blank" style="border-top:4px solid #FF9900;">
+          <div class="tile-icon">🛒</div>
+          <h3 style="color:#B86A00;">Amazon Kindle</h3>
+          <p>Browse Kindle deals, your library and new releases on Amazon UK</p>
+          <span class="tile-btn" style="background:#FF9900;color:#111;">Open Amazon →</span>
+        </a>
+
+        <a class="link-tile" href="https://uk.ereaderiq.com/deals" target="_blank" style="border-top:4px solid var(--forest);">
+          <div class="tile-icon">📉</div>
+          <h3 style="color:var(--forest);">eReaderIQ</h3>
+          <p>Track Kindle prices, set alerts and browse today's UK deals</p>
+          <span class="tile-btn" style="background:var(--forest);color:white;">Open eReaderIQ →</span>
+        </a>
+
+        <a class="link-tile" href="https://librariesniuk.overdrive.com" target="_blank" style="border-top:4px solid var(--libby);">
+          <div class="tile-icon">📖</div>
+          <h3 style="color:var(--libby);">Libraries NI</h3>
+          <p>Borrow ebooks and audiobooks free through Libby with your library card</p>
+          <span class="tile-btn" style="background:var(--libby);color:white;">Open Libby →</span>
+        </a>
+
+        <a class="link-tile" href="https://liveborders.borrowbox.com" target="_blank" style="border-top:4px solid var(--bb);">
+          <div class="tile-icon">📗</div>
+          <h3 style="color:var(--bb);">LIVE Borders</h3>
+          <p>Borrow digital and audio books free through BorrowBox</p>
+          <span class="tile-btn" style="background:var(--bb);color:white;">Open BorrowBox →</span>
+        </a>
+
+        <a class="link-tile" href="https://www.goodreads.com/user/show/186981953" target="_blank" style="border-top:4px solid #3A8C5C;">
+          <div class="tile-icon">🌿</div>
+          <h3 style="color:#3A8C5C;">Goodreads</h3>
+          <p>Your shelves, reviews and reading challenges on Goodreads</p>
+          <span class="tile-btn" style="background:#3A8C5C;color:white;">Open Goodreads →</span>
+        </a>
+
+        <a class="link-tile" href="https://fable.co" target="_blank" style="border-top:4px solid #3B6BAF;">
+          <div class="tile-icon">📘</div>
+          <h3 style="color:#3B6BAF;">Fable</h3>
+          <p>Your Fable shelves and book clubs — read and discover together</p>
+          <span class="tile-btn" style="background:#3B6BAF;color:white;">Open Fable →</span>
+        </a>
+
       </div>
     </div>
   </div>
 
 </main>
 
-<footer>✦ &nbsp; 99p deals via eReaderIQ &nbsp;•&nbsp; Book data via Google Books &nbsp;•&nbsp; TBR via Goodreads &nbsp; ✦</footer>
+<footer>✦ &nbsp; Your personal reading companion &nbsp;•&nbsp; Libraries NI · LIVE Borders · Goodreads · Fable &nbsp; ✦</footer>
+
+<!-- ADD BOOK MODAL -->
+<div class="modal-overlay" id="add-modal" style="display:none;" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal-box">
+    <h3>➕ Add a Book</h3>
+    <div class="modal-status" id="modal-status">Enter a title or author to search</div>
+    <input id="modal-input" class="modal-input" placeholder="e.g. The Midnight Library" onkeypress="if(event.key==='Enter')confirmAdd()">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmAdd()">Add Book</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ═══════════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════════
-const GR_USER = '186981953';
-
-// Your library search URLs
-const LIBBY_URL    = title => `https://librariesniuk.overdrive.com/search?query=${encodeURIComponent(title)}`;
-const BORROWBOX_URL = title => `https://liveborders.borrowbox.com/`;  // BorrowBox opens to search page (no deep-link supported)
-
-// Multiple proxies tried in order — if one fails, next is attempted
-const PROXIES = [
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+// ═══════════════════════════════════════
+// PRE-LOADED TBR — your Goodreads list
+// Format: [title, author, grRating, libbyborrboxFlagged]
+// ═══════════════════════════════════════
+const TBR_SEED = [
+  ["Pachinko","Min Jin Lee",4.34,0],
+  ["The Perks of Being a Wallflower","Stephen Chbosky",4.24,0],
+  ["How to Kill a Witch","Zoe Venditozzi",3.93,0],
+  ["I Who Have Never Known Men","Jacqueline Harpman",4.08,0],
+  ["1984","George Orwell",4.20,0],
+  ["This Is How You Lose the Time War","Amal El-Mohtar",3.83,0],
+  ["Spellbound","Georgia Leighton",3.56,0],
+  ["Cleopatra","Saara El-Arifi",4.11,0],
+  ["Outlander","Diana Gabaldon",4.26,0],
+  ["This Book Made Me Think of You","Libby Page",4.43,0],
+  ["The Irish Goodbye","Heather Aimee O'Neill",3.76,0],
+  ["The God of the Woods","Liz Moore",4.10,0],
+  ["Buckeye","Patrick Ryan",4.19,0],
+  ["I, Medusa","Ayana Gray",4.05,0],
+  ["Spark of the Everflame","Penn Cole",4.17,0],
+  ["Conform","Ariel Sullivan",4.10,0],
+  ["Edenglassie","Melissa Lucashenko",4.09,0],
+  ["The Way of Kings","Brandon Sanderson",4.66,0],
+  ["No Friend to This House","Natalie Haynes",4.03,0],
+  ["The Will of the Many","James Islington",4.59,0],
+  ["Hamnet","Maggie O'Farrell",4.21,0],
+  ["Clear","Carys Davies",3.86,0],
+  ["Broken Country","Clare Leslie Hall",4.30,0],
+  ["Shady Hollow","Juneau Black",3.74,0],
+  ["Trust","Hernan Diaz",3.80,0],
+  ["When the Moon Hatched","Sarah A. Parker",3.99,0],
+  ["A Poisoner's Tale","Cathryn Kemp",3.72,0],
+  ["Alchemy of Secrets","Stephanie Garber",3.87,0],
+  ["Caraval","Stephanie Garber",3.97,0],
+  ["Ender's Game","Orson Scott Card",4.31,0],
+  ["When You Are Engulfed in Flames","David Sedaris",4.08,0],
+  ["White Fang","Jack London",4.03,0],
+  ["Gone Girl","Gillian Flynn",4.15,0],
+  ["The Correspondent","Virginia Evans",4.53,0],
+  ["The Art of Thinking Clearly","Rolf Dobelli",3.85,0],
+  ["Murder at the Black Cat Cafe","Seishi Yokomizo",3.21,0],
+  ["Katabasis","R.F. Kuang",3.76,1],
+  ["Blood of Hercules","Jasmine Mas",3.92,0],
+  ["Heavenly Bodies","Imani Erriu",3.97,0],
+  ["The Storyteller of Casablanca","Fiona Valpy",4.39,0],
+  ["The Maid's Secret","Nita Prose",3.87,1],
+  ["The Mystery Guest","Nita Prose",3.79,1],
+  ["The Mistletoe Mystery","Nita Prose",3.40,1],
+  ["Homeseeking","Karissa Chen",4.20,0],
+  ["When Among Crows","Veronica Roth",3.72,0],
+  ["Phantasma","Kaylie Smith",4.05,0],
+  ["Blood of Elves","Andrzej Sapkowski",4.10,0],
+  ["Avalon Tower","C.N. Crawford",3.94,0],
+  ["For Whom the Belle Tolls","Jaysea Lynn",4.37,0],
+  ["Matrix","Lauren Groff",3.68,0],
+  ["Ariadne","Jennifer Saint",3.78,0],
+  ["Shield of Sparrows","Devney Perry",4.38,0],
+  ["From Blood and Ash","Jennifer L. Armentrout",4.21,0],
+  ["Butter","Asako Yuzuki",3.45,1],
+  ["The Awakening","Caroline Peckham",3.82,0],
+  ["The Ashes & the Star-Cursed King","Carissa Broadbent",4.06,0],
+  ["One Dark Window","Rachel Gillig",4.26,0],
+  ["The Serpent & the Wings of Night","Carissa Broadbent",4.26,0],
+  ["Idolfire","Grace Curtis",3.59,0],
+  ["Once Upon a Broken Heart","Stephanie Garber",4.59,0],
+  ["Heartless Hunter","Kristen Ciccarelli",4.17,1],
+  ["Quicksilver","Callie Hart",4.32,0],
+  ["The TB12 Method","Tom Brady",3.54,0],
+  ["The Priory of the Orange Tree","Samantha Shannon",4.17,1],
+  ["There Are Rivers in the Sky","Elif Shafak",4.35,0],
+  ["Untitled (The Empyrean, #5)","Rebecca Yarros",4.28,0],
+  ["Untitled (The Empyrean, #4)","Rebecca Yarros",4.48,0],
+  ["Crying in H Mart","Michelle Zauner",4.23,0],
+  ["Demon Copperhead","Barbara Kingsolver",4.46,0],
+  ["The High Mountain Court","A.K. Mulford",3.68,0],
+  ["The Atlas Six","Olivie Blake",3.54,0],
+  ["The Seven Husbands of Evelyn Hugo","Taylor Jenkins Reid",4.39,0],
+  ["The Invisible Life of Addie LaRue","V.E. Schwab",4.16,1],
+  ["The Eye of the World","Robert Jordan",4.19,0],
+  ["The Fellowship of the Ring","J.R.R. Tolkien",4.41,0],
+  ["Marble Hall Murders","Anthony Horowitz",4.26,0],
+  ["Mistborn: The Final Empire","Brandon Sanderson",4.49,0],
+  ["James","Percival Everett",4.43,0],
+  ["The Third Gilmore Girl","Kelly Bishop",4.31,0],
+  ["King of Wrath","Ana Huang",4.04,0],
+  ["A Man Called Ove","Fredrik Backman",4.38,0],
+  ["Beartown","Fredrik Backman",4.29,0],
+  ["Jonathan Strange & Mr Norrell","Susanna Clarke",3.87,0],
+  ["A Little Life","Hanya Yanagihara",4.28,0],
+  ["The Cartographers","Peng Shepherd",3.63,0],
+  ["Emily Wilde's Encyclopaedia of Faeries","Heather Fawcett",3.96,0],
+  ["Under the Whispering Door","T.J. Klune",4.11,0],
+  ["Babel","R.F. Kuang",4.14,1],
+  ["The Kamogawa Food Detectives","Hisashi Kashiwai",3.66,0],
+  ["We'll Prescribe You a Cat","Syou Ishida",3.77,0],
+  ["Letters from the Ginza Shihodo Stationery Shop","Kenji Ueda",3.75,0],
+  ["The Healing Season of Pottery","Yeon Somin",3.67,0],
+  ["The Curious Kitten at the Chibineko Kitchen","Yuta Takahashi",3.95,0],
+  ["Water Moon","Samantha Sotto Yambao",3.78,0],
+  ["Rembrandt is in the Wind","Russ Ramsey",4.51,0],
+  ["How to Think Like a Roman Emperor","Donald J. Robertson",4.34,0],
+  ["The Rosary Girls","Richard Montanari",4.03,0],
+  ["Displeasure Island","Alice Bell",3.62,0],
+  ["Before the Coffee Gets Cold","Toshikazu Kawaguchi",3.65,0],
+  ["The Descent","Paul E. Hardisty",4.18,0],
 ];
 
-async function proxyFetch(url, timeout = 12000) {
-  const errors = [];
-  for (const makeProxy of PROXIES) {
-    try {
-      const proxyUrl = makeProxy(url);
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(timeout) });
-      if (res.ok) {
-        const text = await res.text();
-        // Make sure we got real content, not an error page
-        if (text && text.length > 100 && !text.includes('"error"')) {
-          // Return a fake Response-like object with the text
-          return { ok: true, text: async () => text };
-        }
-      }
-    } catch(e) { errors.push(e.message); }
-  }
-  throw new Error('All proxies failed: ' + errors.join(', '));
-}
-
-// Multiple RSS feed URLs to try for eReaderIQ UK 99p deals
-const EREADERIQ_FEEDS = [
-  'https://uk.ereaderiq.com/deals',
-  'https://uk.ereaderiq.com/rss/daily-deals',
-  'https://uk.ereaderiq.com/browse/ebooks/price/asc/?priceto=0.99&format=rss',
-  'https://uk.ereaderiq.com/rss/price-drops',
-];
-
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // DARK MODE
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════
 let isDark = localStorage.getItem('kdt-dark') === '1';
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   document.getElementById('dark-btn').textContent = isDark ? '☀️ Light' : '🌙 Dark';
 }
-function toggleDark() {
-  isDark = !isDark;
-  localStorage.setItem('kdt-dark', isDark ? '1' : '0');
-  applyTheme();
-}
+function toggleDark() { isDark = !isDark; localStorage.setItem('kdt-dark', isDark?'1':'0'); applyTheme(); }
 applyTheme();
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // TABS
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════
 function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -615,611 +413,346 @@ function showTab(name, btn) {
   btn.classList.add('active');
 }
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // HELPERS
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════
+function normTitle(t) {
+  return (t||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
+}
+function bookKey(title) { return 'kdt-book-' + normTitle(title).slice(0,50); }
+function coverKey(title) { return 'kdt-cov-' + normTitle(title).slice(0,50); }
 function starStr(r) {
   if (!r) return '';
   const f = Math.round(r);
-  return '★'.repeat(f) + '☆'.repeat(5 - f);
-}
-function pctOff(orig, sale) {
-  if (!orig || !sale || orig <= sale) return null;
-  return Math.round((1 - sale / orig) * 100) + '% off';
-}
-function normTitle(t) {
-  return (t || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g,' ').trim();
-}
-function titleMatch(a, b) {
-  const na = normTitle(a), nb = normTitle(b);
-  if (!na || !nb) return false;
-  // match if one contains the other (handles subtitle differences)
-  return na.includes(nb.slice(0,20)) || nb.includes(na.slice(0,20));
+  return '★'.repeat(f) + '☆'.repeat(5-f);
 }
 
-async function fetchGoogleBooks(query) {
+// ═══════════════════════════════════════
+// BOOK DATA — stored per-book in localStorage
+// ═══════════════════════════════════════
+// Schema: { status:'tbr'|'reading'|'read', lib:{ libby:{d,a,p}, bb:{d,a,p} } }
+// d=digital, a=audio, p=physical — each: 'y'|'n'|'?'
+
+function getBookData(title) {
+  const raw = localStorage.getItem(bookKey(title));
+  if (raw) return JSON.parse(raw);
+  return {
+    status: 'tbr',
+    lib: {
+      libby: { d:'?', a:'?', p:'?' },
+      bb:    { d:'?', a:'?', p:'?' }
+    }
+  };
+}
+function saveBookData(title, data) {
+  localStorage.setItem(bookKey(title), JSON.stringify(data));
+}
+function setStatus(title, status) {
+  const d = getBookData(title);
+  d.status = status;
+  saveBookData(title, d);
+  renderBooks();
+}
+function cycleFormat(title, lib, fmt) {
+  const d = getBookData(title);
+  const cur = d.lib[lib][fmt];
+  d.lib[lib][fmt] = cur === '?' ? 'y' : cur === 'y' ? 'n' : '?';
+  saveBookData(title, d);
+  renderBooks();
+}
+function isFreeBorrow(title) {
+  const d = getBookData(title);
+  return Object.values(d.lib.libby).includes('y') || Object.values(d.lib.bb).includes('y');
+}
+
+// ═══════════════════════════════════════
+// BOOK LIST (in-memory, from seed + manual adds)
+// ═══════════════════════════════════════
+let extraBooks = JSON.parse(localStorage.getItem('kdt-extra') || '[]');
+// extraBooks: [{title,author,grRating}]
+
+function saveExtras() { localStorage.setItem('kdt-extra', JSON.stringify(extraBooks)); }
+
+function getAllBooks() {
+  const seed = TBR_SEED.map(([t,a,r]) => ({title:t, author:a, grRating:r}));
+  return [...seed, ...extraBooks];
+}
+
+function deleteExtra(title) {
+  extraBooks = extraBooks.filter(b => b.title !== title);
+  saveExtras();
+  renderBooks();
+}
+
+// ═══════════════════════════════════════
+// COVER LOADING (lazy, via Google Books)
+// ═══════════════════════════════════════
+const coverQueue = [];
+let coverLoading = false;
+
+function getCover(title) {
+  return localStorage.getItem(coverKey(title)) || null;
+}
+
+function requestCover(title) {
+  if (getCover(title) || coverQueue.includes(title)) return;
+  coverQueue.push(title);
+  processQueue();
+}
+
+async function processQueue() {
+  if (coverLoading || !coverQueue.length) return;
+  coverLoading = true;
+  const title = coverQueue.shift();
   try {
-    const q = encodeURIComponent(query.replace(/[^\w\s]/g, '').trim().slice(0, 70));
+    const q = encodeURIComponent(title.replace(/[^\w\s]/g,'').trim().slice(0,60));
     const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&langRestrict=en`);
     const d = await r.json();
-    if (!d.items?.[0]) return null;
-    const v = d.items[0].volumeInfo;
-    return {
-      title:       v.title || query,
-      author:      v.authors?.[0] || '',
-      cover:       (v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '').replace('http:','https:'),
-      rating:      v.averageRating || null,
-      ratingCount: v.ratingsCount  || null,
-      description: v.description   || '',
-      categories:  v.categories?.[0] || '',
-      pageCount:   v.pageCount || null,
-    };
-  } catch { return null; }
-}
-
-// ═══════════════════════════════════════════════════
-// DEALS STATE
-// ═══════════════════════════════════════════════════
-let allDeals     = [];   // all 99p deals (enriched)
-let filteredDeals = [];  // after genre filter
-let currentGenre = 'all';
-let heroIdx      = 0;
-
-// ═══════════════════════════════════════════════════
-// LOAD DEALS
-// ═══════════════════════════════════════════════════
-async function loadDeals() {
-  const list   = document.getElementById('deals-list');
-  const detail = document.getElementById('deal-detail');
-
-  // Show a status message while trying
-  list.innerHTML = `<div class="loading"><div class="spinner"></div><p>Fetching 99p deals…</p></div>`;
-
-  try {
-    let items = [];
-    let lastErr = '';
-
-    // Try each feed URL until we get results
-    for (const feedUrl of EREADERIQ_FEEDS) {
-      try {
-        const res  = await proxyFetch(feedUrl, 12000);
-        const text = await res.text();
-        const xml  = new DOMParser().parseFromString(text, 'text/xml');
-        if (!xml.querySelector('parsererror')) {
-          items = [...xml.querySelectorAll('item')];
-          if (items.length) break;
-        }
-      } catch(e) { lastErr = e.message; }
-    }
-
-    if (!items.length) throw new Error(lastErr || 'No items in any feed');
-
-    // Parse + filter 99p only
-    const parsed = items.map(item => {
-      const rawTitle  = item.querySelector('title')?.textContent || '';
-      const link      = item.querySelector('link')?.textContent  || '#';
-      const desc      = item.querySelector('description')?.textContent || '';
-      // Try multiple price patterns: £0.99, $0.99, 0.99
-      const prices    = desc.match(/£[\d.]+/g) || desc.match(/[\d.]+/g) || [];
-      const salePrice = prices[0] ? (prices[0].startsWith('£') ? prices[0] : '£'+prices[0]) : null;
-      const wasPrice  = prices[1] ? (prices[1].startsWith('£') ? prices[1] : '£'+prices[1]) : null;
-      return { rawTitle, link, salePrice, wasPrice, info: null, genre: '' };
-    }).filter(d => d.rawTitle && d.salePrice);
-
-    // Try strict 99p filter first, fall back to all deals if none found
-    let finalDeals = parsed.filter(d => d.salePrice === '£0.99');
-    if (!finalDeals.length) finalDeals = parsed; // show all if no 99p found today
-
-    if (!finalDeals.length) throw new Error('no deals parsed');
-
-    // Deals loaded — hide status bar
-    document.getElementById('deals-status-bar').style.display = 'none';
-    allDeals = finalDeals;
-    filteredDeals = [...allDeals];
-
-    // Skeleton rows
-    list.innerHTML = '';
-    allDeals.forEach((d, i) => {
-      const row = document.createElement('div');
-      row.className = 'deal-row';
-      row.id = 'row-' + i;
-      row.onclick = () => selectDeal(i);
-      row.innerHTML = `
-        <div class="deal-thumb">📖</div>
-        <div class="deal-row-info">
-          <div class="deal-row-title">${d.rawTitle}</div>
-          <div class="deal-row-price">£0.99</div>
-        </div>`;
-      list.appendChild(row);
-    });
-
-    // Show hero placeholder
-    document.getElementById('hero-wrap').style.display = 'block';
-    document.getElementById('hero-title').textContent = allDeals[0].rawTitle;
-    document.getElementById('hero-price').textContent = '£0.99';
-
-    // Auto-select first
-    selectDealRaw(0);
-
-    // Enrich one by one
-    const genres = new Set(['all']);
-    for (let i = 0; i < allDeals.length; i++) {
-      const info = await fetchGoogleBooks(allDeals[i].rawTitle);
-      allDeals[i].info = info;
-      if (info?.categories) {
-        const g = info.categories.split('/')[0].trim();
-        allDeals[i].genre = g;
-        genres.add(g);
+    if (d.items?.[0]) {
+      const v = d.items[0].volumeInfo;
+      const cover = (v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '').replace('http:','https:');
+      if (cover) {
+        localStorage.setItem(coverKey(title), cover);
+        // Update any visible card
+        const el = document.querySelector(`[data-cover-title="${CSS.escape(title)}"]`);
+        if (el) el.innerHTML = `<img src="${cover}" alt="">`;
       }
-
-      // update row
-      const row = document.getElementById('row-' + i);
-      if (row && info) {
-        if (info.cover) row.querySelector('.deal-thumb').innerHTML = `<img src="${info.cover}" alt="">`;
-        row.querySelector('.deal-row-title').textContent = info.title;
-        if (info.author) {
-          let a = row.querySelector('.deal-row-author');
-          if (!a) {
-            a = document.createElement('div');
-            a.className = 'deal-row-author';
-            row.querySelector('.deal-row-info').insertBefore(a, row.querySelector('.deal-row-price'));
-          }
-          a.textContent = info.author;
-        }
-      }
-
-      // update TBR badges
-      updateTBRBadges();
-
-      // update hero if first
-      if (i === 0) updateHero(0);
-
-      // update detail if this row is selected
-      if (row?.classList.contains('sel')) selectDealRaw(i);
     }
-
-    // Build genre filter chips
-    buildGenreChips([...genres]);
-
-    // Final re-render
-    updateTBRBadges();
-
-  } catch(e) {
-    // Show the persistent status bar so Retry is always visible
-    const bar = document.getElementById('deals-status-bar');
-    bar.style.display = 'flex';
-    document.getElementById('deals-status-msg').textContent = "Couldn't reach the deal feed — proxy servers may be busy.";
-
-    list.innerHTML = `
-      <div class="empty-state" style="padding:20px 14px;">
-        <div class="icon">📡</div>
-        <p style="font-size:12px;">Use the <strong>↻ Retry</strong> button above,<br>or open eReaderIQ directly.</p>
-      </div>`;
-    detail.innerHTML = `
-      <div class="detail-empty">
-        <div class="big">📡</div>
-        <p>Press <strong>↻ Retry</strong> above the list,<br>or use the direct links to browse deals.</p>
-      </div>`;
-  }
+  } catch {}
+  coverLoading = false;
+  setTimeout(processQueue, 150);
 }
 
-function buildGenreChips(genres) {
-  const bar = document.getElementById('filter-bar');
-  bar.innerHTML = '';
-  const all = document.createElement('button');
-  all.className = 'filter-chip active';
-  all.dataset.genre = 'all';
-  all.textContent = '📚 All';
-  all.onclick = () => filterGenre('all', all);
-  bar.appendChild(all);
-
-  const icons = { Fiction:'📖', 'Literary Fiction':'✍️', Romance:'💕', Mystery:'🔍', Thriller:'🕵️', 'Science Fiction':'🚀', Fantasy:'🧙', Biography:'👤', History:'🏛️', 'Self-Help':'💡', Horror:'👻', Humor:'😄' };
-  genres.filter(g => g !== 'all').sort().forEach(g => {
-    const btn = document.createElement('button');
-    btn.className = 'filter-chip';
-    btn.dataset.genre = g;
-    btn.textContent = (icons[g] || '📂') + ' ' + g;
-    btn.onclick = () => filterGenre(g, btn);
-    bar.appendChild(btn);
-  });
-}
-
-function filterGenre(genre, btn) {
-  currentGenre = genre;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+// ═══════════════════════════════════════
+// FILTER STATE
+// ═══════════════════════════════════════
+let currentFilter = 'all';
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
-  filteredDeals = genre === 'all' ? [...allDeals] : allDeals.filter(d => d.genre === genre);
-  rebuildList();
+  renderBooks();
 }
 
-function rebuildList() {
-  const list = document.getElementById('deals-list');
-  list.innerHTML = '';
-  if (!filteredDeals.length) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>No 99p deals in this genre today.</p></div>`;
-    document.getElementById('deal-detail').innerHTML = `<div class="detail-empty"><div class="big">📖</div><p>No deals for this genre</p></div>`;
+// ═══════════════════════════════════════
+// RENDER BOOKS
+// ═══════════════════════════════════════
+function renderBooks() {
+  const list   = document.getElementById('book-list');
+  const search = document.getElementById('search-input').value.trim().toLowerCase();
+
+  let books = getAllBooks();
+
+  // Search filter
+  if (search) {
+    books = books.filter(b =>
+      b.title.toLowerCase().includes(search) ||
+      b.author.toLowerCase().includes(search)
+    );
+  }
+
+  // Status / library filter
+  if (currentFilter !== 'all') {
+    books = books.filter(b => {
+      const d = getBookData(b.title);
+      if (currentFilter === 'free') return isFreeBorrow(b.title);
+      return d.status === currentFilter;
+    });
+  }
+
+  // Sort: reading first, then tbr, then read
+  books.sort((a, b) => {
+    const order = { reading: 0, tbr: 1, read: 2 };
+    const sa = getBookData(a.title).status;
+    const sb = getBookData(b.title).status;
+    return (order[sa] ?? 1) - (order[sb] ?? 1);
+  });
+
+  // Count
+  const all = getAllBooks();
+  const readCount    = all.filter(b => getBookData(b.title).status === 'read').length;
+  const readingCount = all.filter(b => getBookData(b.title).status === 'reading').length;
+  const freeCount    = all.filter(b => isFreeBorrow(b.title)).length;
+  document.getElementById('book-count').textContent =
+    `${all.length} books · ${readingCount} reading · ${readCount} read · ${freeCount} free to borrow`;
+
+  if (!books.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>No books found.<br>Try a different search or filter.</p></div>`;
     return;
   }
-  filteredDeals.forEach((d, i) => {
-    const origIdx = allDeals.indexOf(d);
-    const isTBR   = isTBRMatch(d);
-    const row = document.createElement('div');
-    row.className = 'deal-row' + (isTBR ? ' tbr-match' : '');
-    row.id = 'frow-' + i;
-    row.onclick = () => selectDeal(origIdx);
-    const cover = d.info?.cover;
-    const title  = d.info?.title  || d.rawTitle;
-    const author = d.info?.author || '';
-    row.innerHTML = `
-      <div class="deal-thumb">${cover ? `<img src="${cover}" alt="">` : '📖'}</div>
-      <div class="deal-row-info">
-        <div class="deal-row-title">${title}</div>
-        ${author ? `<div class="deal-row-author">${author}</div>` : ''}
-        <div class="deal-row-price">£0.99</div>
-        ${isTBR ? `<div class="tbr-badge">🌿 On your TBR!</div>` : ''}
-      </div>`;
-    list.appendChild(row);
-  });
-  // select first
-  if (filteredDeals.length) selectDeal(allDeals.indexOf(filteredDeals[0]));
-}
 
-// ═══════════════════════════════════════════════════
-// SELECT DEAL + DETAIL PANE
-// ═══════════════════════════════════════════════════
-function selectDeal(origIdx) {
-  // mark all filtered rows
-  document.querySelectorAll('.deal-row').forEach(r => r.classList.remove('sel'));
-  const fi = filteredDeals.indexOf(allDeals[origIdx]);
-  const frow = document.getElementById('frow-' + fi);
-  if (frow) frow.classList.add('sel');
-  selectDealRaw(origIdx);
-}
+  list.innerHTML = '';
+  books.forEach(book => {
+    const { title, author, grRating } = book;
+    const data   = getBookData(title);
+    const status = data.status;
+    const cover  = getCover(title);
+    const free   = isFreeBorrow(title);
+    const isExtra = extraBooks.some(b => b.title === title);
 
-function selectDealRaw(i) {
-  const d    = allDeals[i];
-  if (!d) return;
-  const info = d.info;
-  const detail = document.getElementById('deal-detail');
-  const title  = info?.title  || d.rawTitle;
-  const author = info?.author || '';
-  const cover  = info?.cover  || '';
-  const rating = info?.rating;
-  const rCount = info?.ratingCount;
-  const desc   = info?.description ? info.description.slice(0,300) + (info.description.length > 300 ? '…' : '') : '';
-  const cats   = info?.categories || '';
-  const pages  = info?.pageCount  || '';
-  const badge  = pctOff(d.wasPrice ? parseFloat(d.wasPrice.replace('£','')) : null, 0.99);
-  const amzUrl = d.link !== '#' ? d.link : `https://www.amazon.co.uk/s?k=${encodeURIComponent(title+' kindle')}&i=digital-text`;
-  const erUrl  = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(title)}`;
-  const isTBR  = isTBRMatch(d);
+    // Queue cover fetch if not cached
+    if (!cover) requestCover(title);
 
-  detail.innerHTML = `
-    ${isTBR ? `<div class="tbr-match-banner">🌿 &nbsp; This book is on your Goodreads TBR — grab it while it's 99p!</div>` : ''}
-    <div class="detail-book">
-      <div class="detail-cover">${cover ? `<img src="${cover}" alt="">` : '📖'}</div>
-      <div class="detail-meta">
-        <div class="detail-title">${title}</div>
-        ${author ? `<div class="detail-author">by ${author}</div>` : ''}
-        <div class="price-row">
-          <span class="price-now">£0.99</span>
-          ${d.wasPrice ? `<span class="price-was">${d.wasPrice}</span>` : ''}
-          ${badge      ? `<span class="badge">${badge}</span>` : ''}
-        </div>
-        ${rating ? `<div class="stars-row"><span class="stars">${starStr(rating)}</span><span class="stars-count">${rating}${rCount ? ` (${Number(rCount).toLocaleString()})` : ''}</span></div>` : ''}
-        ${cats   ? `<div class="detail-cats">📂 ${cats}${pages ? ` · 📄 ${pages} pages` : ''}</div>` : ''}
+    // Library availability state
+    const fmtLabel = { d:'📱 Digital', a:'🎧 Audio', p:'📖 Physical' };
+    const fmtClass = (service, fmt) => {
+      const v = data.lib[service][fmt];
+      return v === 'y' ? 'yes' : v === 'n' ? 'no' : '';
+    };
+    const fmtText  = (service, fmt) => {
+      const v = data.lib[service][fmt];
+      return v === 'y' ? '✓ ' + fmtLabel[fmt] : v === 'n' ? '✗ ' + fmtLabel[fmt] : '? ' + fmtLabel[fmt];
+    };
+
+    const libbySearch = `https://librariesniuk.overdrive.com/search?query=${encodeURIComponent(title)}`;
+    const bbSearch    = `https://liveborders.borrowbox.com/`;
+    const amzUrl      = `https://www.amazon.co.uk/s?k=${encodeURIComponent(title+' kindle')}&i=digital-text`;
+    const ninetyNine  = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(title)}`;
+
+    const safeTitle = title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+    const card = document.createElement('div');
+    card.className = `book-card ${status}${free ? ' free-borrow' : ''}`;
+    card.innerHTML = `
+      <div class="book-cover" data-cover-title="${title.replace(/"/g,'&quot;')}">
+        ${cover ? `<img src="${cover}" alt="">` : '📖'}
       </div>
-    </div>
-    ${desc ? `<div class="detail-desc">${desc}</div>` : ''}
-    <a class="btn-amazon"  href="${amzUrl}" target="_blank" rel="noopener">🛒 &nbsp; Buy on Amazon — £0.99 →</a>
-    <a class="btn-ereader" href="${erUrl}"  target="_blank" rel="noopener">📉 &nbsp; Track price on eReaderIQ</a>
-    <div style="margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);">
-      <div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:8px;">📚 Check your libraries first — it might be free!</div>
-      <a class="btn-library libby"     href="${LIBBY_URL(title)}"     target="_blank" rel="noopener">📖 &nbsp; Search Libraries NI (Libby) →</a>
-      <a class="btn-library borrowbox" href="${BORROWBOX_URL(title)}" target="_blank" rel="noopener">📗 &nbsp; Search LIVE Borders (BorrowBox) →</a>
-    </div>`;
-}
+      <div class="book-body">
+        <div class="badge-row">
+          ${status==='tbr'     ? `<span class="pill tbr">🔖 To Read</span>` : ''}
+          ${status==='reading' ? `<span class="pill reading">📖 Reading</span>` : ''}
+          ${status==='read'    ? `<span class="pill read">✓ Read</span>` : ''}
+          ${free               ? `<span class="pill free">📚 Free to Borrow</span>` : ''}
+        </div>
+        <div class="book-title">${title}</div>
+        <div class="book-author">by ${author}</div>
+        ${grRating ? `<div class="gr-rating">${starStr(grRating)} <span style="font-size:10px;color:var(--muted);">${grRating} on Goodreads</span></div>` : ''}
 
-// ═══════════════════════════════════════════════════
-// HERO CARD
-// ═══════════════════════════════════════════════════
-function updateHero(i) {
-  const d = allDeals[i];
-  if (!d) return;
-  heroIdx = i;
-  const info = d.info;
-  const title  = info?.title  || d.rawTitle;
-  const author = info?.author || '';
-  const cover  = info?.cover  || '';
-  const badge  = pctOff(d.wasPrice ? parseFloat(d.wasPrice.replace('£','')) : null, 0.99);
+        <!-- Status toggle -->
+        <div class="status-toggle">
+          <button class="status-btn tbr-btn${status==='tbr'?' active':''}"     onclick="setStatus('${safeTitle}','tbr')">🔖 TBR</button>
+          <button class="status-btn reading-btn${status==='reading'?' active':''}" onclick="setStatus('${safeTitle}','reading')">📖 Reading</button>
+          <button class="status-btn read-btn${status==='read'?' active':''}"   onclick="setStatus('${safeTitle}','read')">✓ Read</button>
+        </div>
 
-  document.getElementById('hero-title').textContent  = title;
-  document.getElementById('hero-author').textContent = author ? 'by ' + author : '';
-  document.getElementById('hero-price').textContent  = '£0.99';
-  document.getElementById('hero-was').textContent    = d.wasPrice ? d.wasPrice : '';
+        <!-- Library availability -->
+        <div class="lib-box">
+          <div class="lib-box-title">🏛️ Library Availability — tap each format to mark Yes / No</div>
+          <div class="lib-row">
+            <span class="lib-name">📖 Libraries NI</span>
+            <button class="fmt-btn ${fmtClass('libby','d')}" onclick="cycleFormat('${safeTitle}','libby','d')">${fmtText('libby','d')}</button>
+            <button class="fmt-btn ${fmtClass('libby','a')}" onclick="cycleFormat('${safeTitle}','libby','a')">${fmtText('libby','a')}</button>
+            <button class="fmt-btn ${fmtClass('libby','p')}" onclick="cycleFormat('${safeTitle}','libby','p')">${fmtText('libby','p')}</button>
+            <a class="lib-search" href="${libbySearch}" target="_blank">🔍 Search</a>
+          </div>
+          <div class="lib-row">
+            <span class="lib-name">📗 LIVE Borders</span>
+            <button class="fmt-btn ${fmtClass('bb','d')}" onclick="cycleFormat('${safeTitle}','bb','d')">${fmtText('bb','d')}</button>
+            <button class="fmt-btn ${fmtClass('bb','a')}" onclick="cycleFormat('${safeTitle}','bb','a')">${fmtText('bb','a')}</button>
+            <button class="fmt-btn ${fmtClass('bb','p')}" onclick="cycleFormat('${safeTitle}','bb','p')">${fmtText('bb','p')}</button>
+            <a class="lib-search" href="${bbSearch}" target="_blank">🔍 Search</a>
+          </div>
+        </div>
 
-  const badgeEl = document.getElementById('hero-badge');
-  if (badge) { badgeEl.textContent = badge; badgeEl.style.display = 'inline-block'; }
-  else badgeEl.style.display = 'none';
-
-  const coverEl = document.getElementById('hero-cover');
-  coverEl.innerHTML = cover ? `<img src="${cover}" alt="">` : '📖';
-}
-
-function heroClick() {
-  if (allDeals.length) {
-    showTab('deals', document.querySelector('nav button'));
-    selectDeal(heroIdx);
-  }
-}
-
-// ═══════════════════════════════════════════════════
-// TBR MATCHING
-// ═══════════════════════════════════════════════════
-function isTBRMatch(deal) {
-  if (!grBooks.length) return false;
-  const dealTitle = deal.info?.title || deal.rawTitle;
-  return grBooks.some(b => titleMatch(b.title, dealTitle));
-}
-
-function updateTBRBadges() {
-  // update list rows
-  document.querySelectorAll('.deal-row').forEach((row, i) => {
-    const d = filteredDeals[i] || allDeals[i];
-    if (!d) return;
-    if (isTBRMatch(d)) {
-      row.classList.add('tbr-match');
-      if (!row.querySelector('.tbr-badge')) {
-        const badge = document.createElement('div');
-        badge.className = 'tbr-badge';
-        badge.textContent = '🌿 On your TBR!';
-        row.querySelector('.deal-row-info')?.appendChild(badge);
-      }
-    }
+        <!-- Actions -->
+        <div class="action-row">
+          <a class="btn-sm amazon"    href="${amzUrl}"      target="_blank">🛒 Amazon</a>
+          <a class="btn-sm ninety-nine" href="${ninetyNine}" target="_blank">💰 Check 99p</a>
+          ${isExtra ? `<button class="btn-sm del" onclick="deleteExtra('${safeTitle}')">🗑 Remove</button>` : ''}
+        </div>
+      </div>`;
+    list.appendChild(card);
   });
-  // update tracked cards (deal match chips)
-  renderBooks();
 }
 
-// ═══════════════════════════════════════════════════
-// GOODREADS TBR
-// ═══════════════════════════════════════════════════
-let grBooks    = JSON.parse(localStorage.getItem('kdt-gr') || '[]');
-let grLastSync = localStorage.getItem('kdt-gr-sync') || null;
-
-async function loadGoodreads() {
-  const btn = document.getElementById('gr-sync-btn');
-  const sub = document.getElementById('gr-banner-sub');
-  btn.disabled = true;
-  btn.textContent = '↻ Syncing…';
-  sub.textContent = 'Connecting to Goodreads…';
-
-  const feedUrl = `https://www.goodreads.com/review/list_rss/${GR_USER}?shelf=to-read`;
-
-  try {
-    const res  = await proxyFetch(feedUrl, 14000);
-    const text = await res.text();
-    const xml  = new DOMParser().parseFromString(text, 'text/xml');
-
-    // Check for parse error
-    if (xml.querySelector('parsererror')) throw new Error('parse error');
-
-    const items = [...xml.querySelectorAll('item')];
-    if (!items.length) throw new Error('empty shelf');
-
-    grBooks = items.map(item => {
-      const getTag = (...names) => {
-        for (const n of names) {
-          const el = item.querySelector(n);
-          if (el?.textContent?.trim()) return el.textContent.trim();
-        }
-        return '';
-      };
-      const title  = getTag('title').replace(/\s*\(.*?\)\s*$/,'').trim();
-      const author = getTag('author_name','author').replace(/\s*\(.*?\)\s*$/,'').trim();
-      const cover  = getTag('book_large_image_url','book_image_url','book_small_image_url').replace('http:','https:');
-      const rating = parseFloat(getTag('average_rating')) || null;
-      const desc   = getTag('book_description','description').replace(/<[^>]*>/g,'').trim();
-      const grLink = getTag('link');
-      return { title, author, cover, rating, description:desc, grLink, source:'gr' };
-    }).filter(b => b.title);
-
-    localStorage.setItem('kdt-gr', JSON.stringify(grBooks));
-    grLastSync = new Date().toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    localStorage.setItem('kdt-gr-sync', grLastSync);
-
-    document.getElementById('gr-banner-title').textContent = `Goodreads TBR — ${grBooks.length} books`;
-    sub.textContent = `Last synced: ${grLastSync}`;
-    btn.textContent = '↻ Sync';
-    btn.disabled = false;
-
-    updateTBRBadges();
-    renderBooks();
-
-  } catch(err) {
-    sub.textContent = 'Sync failed — check your Goodreads profile is set to Public, then retry.';
-    btn.textContent = '↻ Retry';
-    btn.disabled = false;
-  }
+// ═══════════════════════════════════════
+// ADD BOOK MODAL
+// ═══════════════════════════════════════
+function openAddModal() {
+  document.getElementById('add-modal').style.display = 'flex';
+  document.getElementById('modal-input').value = '';
+  document.getElementById('modal-status').textContent = 'Enter a title or author to search';
+  setTimeout(() => document.getElementById('modal-input').focus(), 50);
 }
-
-// Restore cached data
-if (grBooks.length && grLastSync) {
-  document.getElementById('gr-banner-title').textContent = `Goodreads TBR — ${grBooks.length} books`;
-  document.getElementById('gr-banner-sub').textContent   = `Last synced: ${grLastSync}`;
+function closeAddModal() {
+  document.getElementById('add-modal').style.display = 'none';
 }
-
-// ═══════════════════════════════════════════════════
-// MANUAL TRACKED BOOKS
-// ═══════════════════════════════════════════════════
-let manualBooks = JSON.parse(localStorage.getItem('kdt-manual') || '[]');
-function saveManual() { localStorage.setItem('kdt-manual', JSON.stringify(manualBooks)); }
-
-async function addTracked() {
-  const input = document.getElementById('track-input');
+async function confirmAdd() {
+  const input = document.getElementById('modal-input');
   const q = input.value.trim();
   if (!q) return;
+  const status = document.getElementById('modal-status');
+  status.textContent = `Looking up "${q}"…`;
   input.disabled = true;
-  const orig = input.placeholder;
-  input.placeholder = `Looking up "${q}"…`;
-  input.value = '';
-  const info = await fetchGoogleBooks(q);
-  manualBooks.unshift({
-    title:       info?.title       || q,
-    author:      info?.author      || '',
-    cover:       info?.cover       || '',
-    rating:      info?.rating      || null,
-    description: info?.description || '',
-    source:      'manual',
-  });
-  saveManual();
-  renderBooks();
-  input.placeholder = orig;
+
+  try {
+    const enc = encodeURIComponent(q.replace(/[^\w\s]/g,'').trim().slice(0,70));
+    const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${enc}&maxResults=1&langRestrict=en`);
+    const d = await r.json();
+    let title = q, author = '', grRating = null;
+    if (d.items?.[0]) {
+      const v = d.items[0].volumeInfo;
+      title  = v.title || q;
+      author = v.authors?.[0] || '';
+      const cover = (v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || '').replace('http:','https:');
+      if (cover) localStorage.setItem(coverKey(title), cover);
+    }
+    // Avoid duplicates
+    const allTitles = getAllBooks().map(b => normTitle(b.title));
+    if (allTitles.includes(normTitle(title))) {
+      status.textContent = `"${title}" is already in your list!`;
+      input.disabled = false;
+      return;
+    }
+    extraBooks.unshift({ title, author, grRating });
+    saveExtras();
+    closeAddModal();
+    renderBooks();
+  } catch {
+    extraBooks.unshift({ title: q, author: '', grRating: null });
+    saveExtras();
+    closeAddModal();
+    renderBooks();
+  }
   input.disabled = false;
 }
 
-function removeBook(i) {
-  manualBooks.splice(i, 1);
-  saveManual();
-  renderBooks();
-}
+// ═══════════════════════════════════════
+// INIT — pre-mark books you already know are on Libby/BorrowBox
+// (from your Goodreads "libby-borrowbox" shelf tags)
+// Only runs once; won't overwrite changes you make manually
+// ═══════════════════════════════════════
+const KNOWN_AVAILABLE = [
+  "Katabasis",
+  "The Maid's Secret",
+  "The Mystery Guest",
+  "The Mistletoe Mystery",
+  "Butter",
+  "Heartless Hunter",
+  "The Priory of the Orange Tree",
+  "The Invisible Life of Addie LaRue",
+  "Babel",
+];
 
-// ═══════════════════════════════════════════════════
-// SOURCE FILTER + RENDER
-// ═══════════════════════════════════════════════════
-let currentSource = 'all';
-
-function switchSource(src, btn) {
-  currentSource = src;
-  document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('gr-banner').style.display    = (src==='all'||src==='gr')   ? 'flex':'none';
-  document.getElementById('fable-banner').style.display = (src==='fable')             ? 'flex':'none';
-  document.getElementById('manual-add').style.display   = (src==='all'||src==='mine') ? 'flex':'none';
-  renderBooks();
-}
-
-// ═══════════════════════════════════════════════════
-// LIBRARY AVAILABILITY (manual toggle, persisted)
-// ═══════════════════════════════════════════════════
-// Key format: "avail-libby-NORMTITLE" / "avail-bb-NORMTITLE" → "yes" | "no" | "unknown"
-function availKey(service, title) {
-  return `avail-${service}-${normTitle(title).slice(0,40)}`;
-}
-function getAvail(service, title) {
-  return localStorage.getItem(availKey(service, title)) || 'unknown';
-}
-function setAvail(service, title, state) {
-  localStorage.setItem(availKey(service, title), state);
-  renderBooks(); // re-render to reflect change
-}
-function cycleAvail(service, title) {
-  const cur = getAvail(service, title);
-  // unknown → yes → no → unknown
-  const next = cur === 'unknown' ? 'yes' : cur === 'yes' ? 'no' : 'unknown';
-  setAvail(service, title, next);
-}
-function availBadgeHTML(service, title) {
-  const state = getAvail(service, title);
-  const labels = {
-    libby:     { name:'Libraries NI', icon:'📖' },
-    borrowbox: { name:'LIVE Borders', icon:'📗' },
-  };
-  const l = labels[service];
-  const stateLabel = state === 'yes' ? '✓ Available' : state === 'no' ? '✗ Not available' : '? Not checked';
-  const cls = state;
-  // clicking cycles through states
-  return `<button class="avail-badge ${cls}" onclick="cycleAvail('${service}','${title.replace(/'/g,"\\'")}');event.stopPropagation();" title="Click to update: ${l.name}">${l.icon} ${l.name}: ${stateLabel}</button>`;
-}
-
-// ═══════════════════════════════════════════════════
-// RENDER BOOKS (with library availability)
-// ═══════════════════════════════════════════════════
-function renderBooks() {
-  const el = document.getElementById('tracked-list');
-  if (currentSource === 'fable') {
-    el.innerHTML = `<div class="empty-state"><div class="icon">📖</div><p>Fable doesn't have a public API yet.<br>Your shelves can only be viewed in the Fable app.</p></div>`;
-    return;
-  }
-
-  let books = [];
-  if (currentSource === 'all' || currentSource === 'gr')
-    books = books.concat(grBooks.map((b,i) => ({...b, _src:'gr', _idx:i})));
-  if (currentSource === 'all' || currentSource === 'mine')
-    books = books.concat(manualBooks.map((b,i) => ({...b, _src:'manual', _idx:i})));
-
-  if (!books.length) {
-    const msgs = {
-      gr:   '<div class="icon">🌿</div><p>Press Sync above to load your Goodreads TBR.</p>',
-      mine: '<div class="icon">🔖</div><p>No books tracked yet. Add one above!</p>',
-      all:  '<div class="icon">📚</div><p>Sync Goodreads or add a book manually above.</p>',
-    };
-    el.innerHTML = `<div class="empty-state">${msgs[currentSource]||msgs.all}</div>`;
-    return;
-  }
-
-  el.innerHTML = '';
-  books.forEach(book => {
-    const isGr    = book._src === 'gr';
-    const t       = book.title;
-    const amzUrl  = `https://www.amazon.co.uk/s?k=${encodeURIComponent(t+' kindle')}&i=digital-text`;
-    const erUrl   = `https://uk.ereaderiq.com/search/books/?q=${encodeURIComponent(t)}`;
-    const libbySrch = LIBBY_URL(t);
-    const bbSrch    = BORROWBOX_URL(t);
-
-    // 99p deal match
-    const matchingDeal = allDeals.find(d => titleMatch(t, d.info?.title || d.rawTitle));
-
-    // Availability states
-    const libbyState = getAvail('libby', t);
-    const bbState    = getAvail('borrowbox', t);
-    const eitherAvail = libbyState === 'yes' || bbState === 'yes';
-
-    const card = document.createElement('div');
-    card.className = 'tracked-card' + (isGr ? ' gr-card' : '') + (eitherAvail ? ' avail-highlight' : '');
-    card.innerHTML = `
-      <div class="tracked-cover">${book.cover ? `<img src="${book.cover}" alt="">` : '📖'}</div>
-      <div class="tracked-info">
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;">
-          <span class="source-pill ${isGr ? 'gr':'manual'}">${isGr ? '🌿 Goodreads TBR':'🔖 Tracked'}</span>
-          ${eitherAvail ? `<span style="background:rgba(26,107,154,.15);color:#1a6b9a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;">📚 FREE TO BORROW</span>` : ''}
-        </div>
-        <div class="tracked-title">${t}</div>
-        ${book.author ? `<div class="tracked-author">by ${book.author}</div>` : ''}
-        ${book.rating ? `<div style="color:var(--gold);font-size:12px;margin-bottom:5px;">${starStr(book.rating)} ${book.rating}</div>` : ''}
-        ${matchingDeal ? `<div class="deal-match-chip">🎉 On sale today for £0.99!</div>` : ''}
-
-        <!-- Library availability check -->
-        <div class="library-check-box">
-          <div class="library-check-title">🏛️ Library availability — tap to update after checking</div>
-          <div class="library-check-row">
-            <a class="btn-check-lib libby" href="${libbySrch}" target="_blank" rel="noopener">🔍 Search Libraries NI</a>
-            ${availBadgeHTML('libby', t)}
-          </div>
-          <div class="library-check-row">
-            <a class="btn-check-lib borrowbox" href="${bbSrch}" target="_blank" rel="noopener">🔍 Search LIVE Borders</a>
-            ${availBadgeHTML('borrowbox', t)}
-          </div>
-        </div>
-
-        <div class="tracked-actions" style="margin-top:9px;">
-          <a class="btn-sm amazon"  href="${amzUrl}" target="_blank">🛒 Amazon</a>
-          <a class="btn-sm ereader" href="${erUrl}"  target="_blank">📉 Track price</a>
-          ${isGr && book.grLink ? `<a class="btn-sm gr" href="${book.grLink}" target="_blank">🌿 Goodreads</a>` : ''}
-        </div>
-        ${book.description ? `<div class="book-snippet">${book.description.slice(0,190)}${book.description.length>190?'…':''}</div>` : ''}
-      </div>
-      ${!isGr ? `<button class="remove-btn" onclick="removeBook(${book._idx})" title="Remove">✕</button>` : ''}`;
-    el.appendChild(card);
+function seedAvailability() {
+  if (localStorage.getItem('kdt-avail-seeded')) return;
+  KNOWN_AVAILABLE.forEach(title => {
+    const d = getBookData(title);
+    // Only set if still unknown — don't overwrite user changes
+    if (d.lib.libby.d === '?' && d.lib.bb.d === '?') {
+      d.lib.libby.d = 'y';
+      d.lib.bb.d    = 'y';
+      saveBookData(title, d);
+    }
   });
+  localStorage.setItem('kdt-avail-seeded', '1');
 }
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════════
-loadDeals();
+// ═══════════════════════════════════════
+seedAvailability();
 renderBooks();
-if (!grBooks.length) loadGoodreads();
 </script>
 </body>
 </html>
